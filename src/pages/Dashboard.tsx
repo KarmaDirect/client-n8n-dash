@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TenantSwitcher } from "@/components/TenantSwitcher";
 import { toast } from "sonner";
+import { SubscriptionPanel } from "@/components/SubscriptionPanel";
 
 interface Workflow { id: string; name: string; n8n_workflow_id: string | null; is_active: boolean; }
 interface Run { id: string; workflow_id: string; status: string; started_at: string; finished_at: string | null; }
@@ -63,6 +64,10 @@ const Dashboard = () => {
 
       <section className="mb-10">
         <TenantSwitcher value={orgId} onChange={setOrgId} />
+      </section>
+
+      <section className="mb-10">
+        <SubscriptionPanel />
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
