@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const { signIn, signUp, user } = useAuth();
@@ -28,6 +29,15 @@ const Auth = () => {
       const { error } = await signUp(email, password);
       if (error) toast.error(error); else toast.success("Check your email to confirm your account.");
     }
+  };
+
+  const handleBootstrap = async () => {
+    if (!email || !password) { toast.error("Renseignez email et mot de passe."); return; }
+    const { data, error } = await supabase.functions.invoke("bootstrap-admin", {
+      body: { email, password, org_name: "Webstate (Agence)" },
+    });
+    if (error) { toast.error(error.message || "Échec de configuration"); return; }
+    toast.success("Admin Webstate créé. Vous pouvez vous connecter.");
   };
 
   return (
@@ -57,6 +67,9 @@ const Auth = () => {
                 ) : (
                   <button type="button" className="underline" onClick={() => setMode("signin")}>Already have an account? Sign in</button>
                 )}
+              </div>
+              <div className="text-xs text-muted-foreground text-center mt-2">
+                <button type="button" className="underline" onClick={handleBootstrap}>Configurer l'admin Webstate</button>
               </div>
             </form>
           </CardContent>
