@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import AdminOrgDetails from "@/components/admin/AdminOrgDetails";
 
 interface EventItem { id: string; type: string; created_at: string; org_id: string; meta: any }
 interface RunItem { id: string; status: string; started_at: string; finished_at: string | null; workflow_id: string }
@@ -21,6 +24,7 @@ const Admin = () => {
   const [runs, setRuns] = useState<RunItem[]>([]);
   const [orgs, setOrgs] = useState<OrgItem[]>([]);
   const [orgSearch, setOrgSearch] = useState("");
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
   const filteredOrgs = useMemo(() => {
     const q = orgSearch.trim().toLowerCase();
     if (!q) return orgs;
@@ -184,9 +188,12 @@ const Admin = () => {
                     <TableRow key={o.id}>
                       <TableCell className="font-medium">{o.name}</TableCell>
                       <TableCell>{new Date(o.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right space-x-2">
                         <Button size="sm" variant="outline" onClick={() => viewDashboard(o.id)}>
                           Voir le Dashboard
+                        </Button>
+                        <Button size="sm" onClick={() => setSelectedOrgId(o.id)}>
+                          Détails
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -265,6 +272,16 @@ const Admin = () => {
         </div>
         <p className="text-sm text-muted-foreground">Vue de base pour le MVP. On pourra brancher des logs avancés (Edge Functions/Stripe/N8N) ensuite.</p>
       </section>
+
+      <Dialog open={!!selectedOrgId} onOpenChange={(open) => !open && setSelectedOrgId(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Détails de l’organisation</DialogTitle>
+            <DialogDescription>Workflows et support — en lecture/écriture (admin)</DialogDescription>
+          </DialogHeader>
+          {selectedOrgId ? <AdminOrgDetails orgId={selectedOrgId} /> : null}
+        </DialogContent>
+      </Dialog>
     </main>
   );
 };
