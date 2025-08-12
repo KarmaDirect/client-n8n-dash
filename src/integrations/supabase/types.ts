@@ -339,6 +339,69 @@ export type Database = {
         }
         Relationships: []
       }
+      webhooks: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          org_id: string
+          updated_at: string
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          org_id: string
+          updated_at?: string
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          org_id?: string
+          updated_at?: string
+          webhook_url?: string
+        }
+        Relationships: []
+      }
+      workflow_executions: {
+        Row: {
+          executed_at: string
+          id: string
+          org_id: string
+          response_data: Json | null
+          status: string
+          user_id: string | null
+          workflow_id: string
+        }
+        Insert: {
+          executed_at?: string
+          id?: string
+          org_id: string
+          response_data?: Json | null
+          status?: string
+          user_id?: string | null
+          workflow_id: string
+        }
+        Update: {
+          executed_at?: string
+          id?: string
+          org_id?: string
+          response_data?: Json | null
+          status?: string
+          user_id?: string | null
+          workflow_id?: string
+        }
+        Relationships: []
+      }
       workflow_runs: {
         Row: {
           finished_at: string | null
@@ -380,30 +443,42 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          last_executed_at: string | null
           n8n_workflow_id: string | null
           name: string
           org_id: string
           updated_at: string
+          usage_limit_per_day: number | null
+          usage_limit_per_hour: number | null
+          webhook_id: string | null
         }
         Insert: {
           created_at?: string
           description?: string | null
           id?: string
           is_active?: boolean
+          last_executed_at?: string | null
           n8n_workflow_id?: string | null
           name: string
           org_id: string
           updated_at?: string
+          usage_limit_per_day?: number | null
+          usage_limit_per_hour?: number | null
+          webhook_id?: string | null
         }
         Update: {
           created_at?: string
           description?: string | null
           id?: string
           is_active?: boolean
+          last_executed_at?: string | null
           n8n_workflow_id?: string | null
           name?: string
           org_id?: string
           updated_at?: string
+          usage_limit_per_day?: number | null
+          usage_limit_per_hour?: number | null
+          webhook_id?: string | null
         }
         Relationships: [
           {
@@ -438,6 +513,10 @@ export type Database = {
           owner_id: string
           updated_at: string
         }[]
+      }
+      check_workflow_usage_limit: {
+        Args: { _workflow_id: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {

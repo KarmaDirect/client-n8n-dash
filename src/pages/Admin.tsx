@@ -10,8 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import AdminOrgDetails from "@/components/admin/AdminOrgDetails";
-import { UserCheck } from "lucide-react";
+import WebhookManager from "@/components/admin/WebhookManager";
+import { UserCheck, Webhook } from "lucide-react";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface EventItem { id: string; type: string; created_at: string; org_id: string; meta: any }
 interface RunItem { id: string; status: string; started_at: string; finished_at: string | null; workflow_id: string }
@@ -147,6 +149,17 @@ const Admin = () => {
   return (
     <main className="min-h-screen px-4 py-10 container hero-aurora">
       {header}
+
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="workflows">
+            <Webhook className="h-4 w-4 mr-2" />
+            Gestion N8N
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview" className="space-y-8">
 
       <section className="mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
@@ -307,6 +320,13 @@ const Admin = () => {
         </div>
         <p className="text-sm text-muted-foreground">Vue de base pour le MVP. On pourra brancher des logs avancés (Edge Functions/Stripe/N8N) ensuite.</p>
       </section>
+
+        </TabsContent>
+        
+        <TabsContent value="workflows">
+          <WebhookManager />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={!!selectedOrgId} onOpenChange={(open) => !open && setSelectedOrgId(null)}>
         <DialogContent className="max-w-3xl">

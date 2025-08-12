@@ -11,6 +11,7 @@ import { SiteSection } from "@/components/dashboard/SiteSection";
 import { AutomationSection } from "@/components/dashboard/AutomationSection";
 import { ActivitySection } from "@/components/dashboard/ActivitySection";
 import { SupportSection } from "@/components/dashboard/SupportSection";
+import WorkflowPanel from "@/components/dashboard/WorkflowPanel";
 import { ArrowLeft } from "lucide-react";
 interface Workflow { id: string; name: string; n8n_workflow_id: string | null; is_active: boolean; description?: string | null }
 interface Run { id: string; workflow_id: string; status: string; started_at: string; finished_at: string | null; }
@@ -159,6 +160,12 @@ const Dashboard = () => {
       <section className="mt-6">
         <SupportSection orgId={orgId} calendlyUrl="https://calendly.com/hatim-moro-2002/30min" />
       </section>
+
+      {orgId && (
+        <section className="mt-6">
+          <WorkflowPanel orgId={orgId} />
+        </section>
+      )}
     </main>
   );
 };
