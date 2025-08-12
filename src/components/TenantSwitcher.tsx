@@ -3,15 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 interface Organization { id: string; name: string; }
 
 export const TenantSwitcher = ({ value, onChange }: { value?: string; onChange: (orgId: string) => void }) => {
+  const { user } = useAuth();
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
-
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -27,8 +28,13 @@ export const TenantSwitcher = ({ value, onChange }: { value?: string; onChange: 
 
   const createOrg = async () => {
     if (!newName.trim()) return;
+    if (!user?.id) { toast.error("Vous devez être connecté."); return; }
     setCreating(true);
-    const { data, error } = await supabase.from("organizations").insert({ name: newName }).select("id,name").maybeSingle();
+    const { data, error } = await supabase
+      .from("organizations")
+      .insert({ name: newName, owner_id: user.id })
+      .select("id,name")
+      .maybeSingle();
     setCreating(false);
     if (error) { toast.error(error.message); return; }
     if (data) {
