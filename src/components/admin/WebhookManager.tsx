@@ -43,7 +43,7 @@ const WebhookManager = () => {
   const [webhooks, setWebhooks] = useState<WebhookItem[]>([]);
   const [workflows, setWorkflows] = useState<WorkflowItem[]>([]);
   const [orgs, setOrgs] = useState<OrgItem[]>([]);
-  const [selectedOrg, setSelectedOrg] = useState<string>("");
+  const [selectedOrg, setSelectedOrg] = useState<string>("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isWorkflowOpen, setIsWorkflowOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -151,11 +151,11 @@ const WebhookManager = () => {
     }
   };
 
-  const filteredWebhooks = selectedOrg 
+  const filteredWebhooks = selectedOrg && selectedOrg !== "all"
     ? webhooks.filter(w => w.org_id === selectedOrg)
     : webhooks;
 
-  const filteredWorkflows = selectedOrg 
+  const filteredWorkflows = selectedOrg && selectedOrg !== "all"
     ? workflows.filter(w => w.org_id === selectedOrg)
     : workflows;
 
@@ -347,7 +347,7 @@ const WebhookManager = () => {
             <SelectValue placeholder="Filtrer par organisation" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Toutes les organisations</SelectItem>
+            <SelectItem value="all">Toutes les organisations</SelectItem>
             {orgs.map((org) => (
               <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
             ))}
