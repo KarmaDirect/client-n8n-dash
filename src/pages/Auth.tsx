@@ -1,17 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user } = useAuth();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   document.title = mode === "signin" ? "Sign in — n8n Client Hub" : "Create account — n8n Client Hub";
+
+  useEffect(() => {
+    if (user) navigate("/app", { replace: true });
+  }, [user, navigate]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
