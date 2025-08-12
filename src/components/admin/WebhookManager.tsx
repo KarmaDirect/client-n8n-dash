@@ -127,9 +127,30 @@ const WebhookManager = () => {
       const { error } = await supabase.from('workflows').insert([workflowData]);
       if (error) throw error;
 
-      toast.success('Workflow créé avec succès');
+      toast.success(`Workflow créé avec succès pour ${getOrgName(workflowForm.org_id)} !`);
       setIsWorkflowOpen(false);
       setWorkflowForm({ name: "", description: "", webhook_id: "", usage_limit_per_hour: "", usage_limit_per_day: "", org_id: "", is_active: true });
+      fetchData();
+    } catch (error: any) {
+      toast.error('Erreur: ' + error.message);
+    }
+  };
+
+  const createQuickWorkflow = async (orgId: string, webhookId: string, webhookName: string) => {
+    try {
+      const { error } = await supabase.from('workflows').insert([{
+        name: `Agent ${webhookName}`,
+        description: `Automatisation ${webhookName} créée rapidement`,
+        org_id: orgId,
+        webhook_id: webhookId,
+        is_active: true,
+        usage_limit_per_hour: 10,
+        usage_limit_per_day: 50,
+      }]);
+      
+      if (error) throw error;
+      
+      toast.success(`Workflow "${webhookName}" créé pour ${getOrgName(orgId)} !`);
       fetchData();
     } catch (error: any) {
       toast.error('Erreur: ' + error.message);
@@ -385,15 +406,26 @@ const WebhookManager = () => {
                           {webhook.is_active ? "Actif" : "Inactif"}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => toggleWebhookStatus(webhook.id, webhook.is_active)}
-                        >
-                          {webhook.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                        </Button>
-                      </TableCell>
+                       <TableCell>
+                         <div className="flex gap-2">
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => toggleWebhookStatus(webhook.id, webhook.is_active)}
+                           >
+                             {webhook.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                           </Button>
+                           {webhook.is_active && !workflows.find(w => w.webhook_id === webhook.id) && (
+                             <Button
+                               size="sm"
+                               onClick={() => createQuickWorkflow(webhook.org_id, webhook.id, webhook.name)}
+                               className="bg-green-600 hover:bg-green-700"
+                             >
+                               + Agent
+                             </Button>
+                           )}
+                         </div>
+                       </TableCell>
                     </TableRow>
                   ))}
                   {filteredWebhooks.length === 0 && (
