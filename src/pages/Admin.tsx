@@ -33,19 +33,22 @@ const Admin = () => {
 
   useEffect(() => {
     document.title = "Admin Webstate — Vue d'ensemble";
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute('content', "Admin Webstate — Vue d'ensemble multi-tenant");
   }, []);
 
   useEffect(() => {
     if (!user) return;
     // Check role in client (RLS allows viewing own roles)
-    supabase.from("user_roles").select("role").eq("user_id", user.id)
-      .then(({ data, error }) => {
-        if (error) console.error(error);
-        const ok = (data || []).some(r => r.role === 'admin');
-        setIsAdmin(ok);
-        setChecking(false);
-        if (!ok) navigate('/app', { replace: true });
-      });
+      supabase
+        .rpc('has_role', { _user_id: user.id, _role: 'admin' })
+        .then(({ data, error }) => {
+          if (error) console.error(error);
+          const ok = !!data;
+          setIsAdmin(ok);
+          setChecking(false);
+          if (!ok) navigate('/app', { replace: true });
+        });
   }, [user, navigate]);
 
   useEffect(() => {
@@ -82,13 +85,10 @@ const Admin = () => {
   useEffect(() => {
     if (!isAdmin) return;
     supabase
-      .from('organizations')
-      .select('id,name,created_at')
-      .order('created_at', { ascending: false })
-      .limit(200)
+      .rpc('admin_list_organizations')
       .then(({ data, error }) => {
         if (error) console.error(error);
-        setOrgs(data || []);
+        setOrgs((data as any as OrgItem[]) || []);
       });
   }, [isAdmin]);
 

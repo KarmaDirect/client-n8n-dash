@@ -420,6 +420,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_organizations: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string
