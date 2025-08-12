@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,19 +11,32 @@ import { SiteSection } from "@/components/dashboard/SiteSection";
 import { AutomationSection } from "@/components/dashboard/AutomationSection";
 import { ActivitySection } from "@/components/dashboard/ActivitySection";
 import { SupportSection } from "@/components/dashboard/SupportSection";
+import { ArrowLeft } from "lucide-react";
 interface Workflow { id: string; name: string; n8n_workflow_id: string | null; is_active: boolean; description?: string | null }
 interface Run { id: string; workflow_id: string; status: string; started_at: string; finished_at: string | null; }
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [orgId, setOrgId] = useState<string | undefined>(undefined);
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [impersonationMode, setImpersonationMode] = useState<any>(null);
   const runsRef = useRef<Run[]>([]);
   const [, forceTick] = useState(0);
   document.title = "Dashboard — n8n Client Hub";
 
   useEffect(() => {
+    // Vérifier si on est en mode impersonation (admin connecté dans un compte client)
+    const impersonationData = localStorage.getItem("admin_impersonation");
+    if (impersonationData) {
+      const parsed = JSON.parse(impersonationData);
+      setImpersonationMode(parsed);
+      setOrgId(parsed.target_org_id);
+      return;
+    }
+    
+    // Mode normal : utiliser l'org stockée
     const stored = localStorage.getItem("orgId");
     if (stored) setOrgId(stored);
   }, []);
@@ -55,23 +69,60 @@ const Dashboard = () => {
     toast.info("To trigger n8n, add your N8N_BASE_URL and N8N_API_KEY secrets.");
   };
 
+  const exitImpersonation = () => {
+    localStorage.removeItem("admin_impersonation");
+    setImpersonationMode(null);
+    navigate('/admin');
+  };
+
   return (
     <main className="min-h-screen px-4 py-10 container hero-aurora">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Welcome{user?.email ? `, ${user.email}` : ''}</h1>
-          <p className="text-muted-foreground">Manage, trigger, and monitor your n8n workflows</p>
+      <header className="mb-8">
+        {impersonationMode ? (
+          <div className="bg-orange-100 dark:bg-orange-900/20 border border-orange-300 dark:border-orange-700 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button variant="outline" size="sm" onClick={exitImpersonation}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Retour Admin
+                </Button>
+                <div>
+                  <span className="font-medium text-orange-800 dark:text-orange-200">
+                    Mode Admin - Connecté dans le compte: {impersonationMode.org_name}
+                  </span>
+                  <p className="text-sm text-orange-700 dark:text-orange-300">
+                    Vous voyez exactement ce que voit le client
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">
+              {impersonationMode ? `Dashboard de ${impersonationMode.org_name}` : `Welcome${user?.email ? `, ${user.email}` : ''}`}
+            </h1>
+            <p className="text-muted-foreground">
+              {impersonationMode ? 'Vue client - Gérez vos workflows' : 'Manage, trigger, and monitor your n8n workflows'}
+            </p>
+          </div>
+          <Button variant="outline" onClick={() => supabase.auth.signOut()}>Sign out</Button>
         </div>
-        <Button variant="outline" onClick={() => supabase.auth.signOut()}>Sign out</Button>
       </header>
 
-      <section className="mb-10">
-        <TenantSwitcher value={orgId} onChange={setOrgId} />
-      </section>
+      {!impersonationMode && (
+        <>
+          <section className="mb-10">
+            <TenantSwitcher value={orgId} onChange={setOrgId} />
+          </section>
 
-      <section className="mb-10">
-        <SubscriptionPanel />
-      </section>
+          <section className="mb-10">
+            <SubscriptionPanel />
+          </section>
+        </>
+      )}
 
       <section className="mb-8">
         <Card>

@@ -10,10 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import AdminOrgDetails from "@/components/admin/AdminOrgDetails";
+import { UserCheck } from "lucide-react";
+import { toast } from "sonner";
 
 interface EventItem { id: string; type: string; created_at: string; org_id: string; meta: any }
 interface RunItem { id: string; status: string; started_at: string; finished_at: string | null; workflow_id: string }
-interface OrgItem { id: string; name: string; created_at: string }
+interface OrgItem { id: string; name: string; created_at: string; owner_id: string }
 const Admin = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -25,6 +27,7 @@ const Admin = () => {
   const [orgs, setOrgs] = useState<OrgItem[]>([]);
   const [orgSearch, setOrgSearch] = useState("");
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  const [impersonating, setImpersonating] = useState(false);
   const filteredOrgs = useMemo(() => {
     const q = orgSearch.trim().toLowerCase();
     if (!q) return orgs;
@@ -104,9 +107,35 @@ const Admin = () => {
     </header>
 ), [navigate]);
 
-  const viewDashboard = (orgId: string) => {
-    localStorage.setItem('orgId', orgId);
-    navigate('/app');
+  const handleImpersonate = async (targetUserId: string, orgId: string, orgName: string) => {
+    setImpersonating(true);
+    try {
+      // Vérifier que l'admin peut impersonner cet utilisateur
+      const { data, error } = await supabase.rpc('admin_impersonate_user', {
+        _target_user_id: targetUserId
+      });
+      
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        toast.error("Impossible d'accéder à ce compte client");
+        return;
+      }
+      
+      // Stocker les infos d'impersonation pour le Dashboard
+      localStorage.setItem('admin_impersonation', JSON.stringify({
+        target_user_id: targetUserId,
+        target_org_id: orgId,
+        admin_user_id: user?.id,
+        org_name: orgName
+      }));
+      
+      toast.success(`Connexion dans le compte de ${orgName}`);
+      navigate('/app');
+    } catch (error: any) {
+      toast.error('Erreur lors de la connexion: ' + error.message);
+    } finally {
+      setImpersonating(false);
+    }
   };
 
   if (checking) {
@@ -189,8 +218,14 @@ const Admin = () => {
                       <TableCell className="font-medium">{o.name}</TableCell>
                       <TableCell>{new Date(o.created_at).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right space-x-2">
-                        <Button size="sm" variant="outline" onClick={() => viewDashboard(o.id)}>
-                          Voir le Dashboard
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => handleImpersonate(o.owner_id, o.id, o.name)}
+                          disabled={impersonating}
+                        >
+                          <UserCheck className="h-4 w-4 mr-2" />
+                          Entrer dans le compte
                         </Button>
                         <Button size="sm" onClick={() => setSelectedOrgId(o.id)}>
                           Détails

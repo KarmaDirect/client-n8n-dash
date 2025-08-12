@@ -420,6 +420,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_impersonate_user: {
+        Args: { _target_user_id: string }
+        Returns: {
+          user_id: string
+          email: string
+          organization_id: string
+          organization_name: string
+        }[]
+      }
       admin_list_organizations: {
         Args: Record<PropertyKey, never>
         Returns: {
