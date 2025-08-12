@@ -196,73 +196,102 @@ const WebhookManager = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Gestion N8N & Workflows</h2>
-          <p className="text-muted-foreground">Créez et gérez les webhooks et workflows pour vos clients</p>
+          <h1 className="text-3xl font-bold tracking-tight">Gestion N8N & Workflows</h1>
+          <p className="text-muted-foreground mt-1">Créez et gérez les webhooks et workflows pour vos clients</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button size="lg" className="shadow-sm">
                 <Plus className="h-4 w-4 mr-2" />
                 Nouveau Webhook
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Créer un nouveau webhook</DialogTitle>
+                <DialogTitle className="text-xl">Créer un nouveau webhook N8N</DialogTitle>
                 <DialogDescription>
-                  Configurez un point de réception pour les webhooks N8N
+                  Collez votre URL N8N et configurez l'automatisation pour votre client
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="org-select">Organisation cliente *</Label>
-                  <Select value={webhookForm.org_id} onValueChange={(value) => setWebhookForm({...webhookForm, org_id: value})}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner une organisation" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {orgs.map((org) => (
-                        <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="org-select">Organisation cliente *</Label>
+                    <Select value={webhookForm.org_id} onValueChange={(value) => setWebhookForm({...webhookForm, org_id: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choisir le client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {orgs.map((org) => (
+                          <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="webhook-name">Nom de l'agent *</Label>
+                    <Input
+                      id="webhook-name"
+                      value={webhookForm.name}
+                      onChange={(e) => setWebhookForm({...webhookForm, name: e.target.value})}
+                      placeholder="Ex: Agent SMS & Email"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="webhook-name">Nom du webhook *</Label>
-                  <Input
-                    id="webhook-name"
-                    value={webhookForm.name}
-                    onChange={(e) => setWebhookForm({...webhookForm, name: e.target.value})}
-                    placeholder="Ex: Lead Capture Agent"
-                  />
+                
+                <div className="space-y-2">
+                  <Label htmlFor="webhook-url" className="text-base font-medium">URL du webhook N8N *</Label>
+                  <div className="relative">
+                    <Textarea
+                      id="webhook-url"
+                      value={webhookForm.webhook_url}
+                      onChange={(e) => setWebhookForm({...webhookForm, webhook_url: e.target.value})}
+                      placeholder="Collez ici votre URL complète N8N
+Ex: https://n8n.mondomaine.com/webhook/12345-67890-abcde..."
+                      className="min-h-[80px] font-mono text-sm"
+                      rows={3}
+                    />
+                    <div className="absolute top-2 right-2">
+                      <Webhook className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    💡 Tip: Copiez l'URL complète depuis votre workflow N8N
+                  </p>
                 </div>
-                <div>
-                  <Label htmlFor="webhook-url">URL du webhook N8N *</Label>
-                  <Input
-                    id="webhook-url"
-                    value={webhookForm.webhook_url}
-                    onChange={(e) => setWebhookForm({...webhookForm, webhook_url: e.target.value})}
-                    placeholder="https://n8n.example.com/webhook/..."
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="webhook-desc">Description</Label>
+
+                <div className="space-y-2">
+                  <Label htmlFor="webhook-desc">Description de l'automatisation</Label>
                   <Textarea
                     id="webhook-desc"
                     value={webhookForm.description}
                     onChange={(e) => setWebhookForm({...webhookForm, description: e.target.value})}
-                    placeholder="Description de l'automatisation..."
+                    placeholder="Ex: Envoi automatique de SMS et email de confirmation après action utilisateur"
+                    rows={2}
                   />
                 </div>
-                <div className="flex items-center space-x-2">
+                
+                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                  <div>
+                    <p className="font-medium">Activer le webhook</p>
+                    <p className="text-sm text-muted-foreground">Le webhook sera directement utilisable</p>
+                  </div>
                   <Switch
                     checked={webhookForm.is_active}
                     onCheckedChange={(checked) => setWebhookForm({...webhookForm, is_active: checked})}
                   />
-                  <Label>Actif</Label>
                 </div>
-                <Button onClick={createWebhook} className="w-full">Créer le webhook</Button>
+                
+                <div className="flex gap-3 pt-2">
+                  <Button onClick={createWebhook} className="flex-1" size="lg">
+                    <Webhook className="h-4 w-4 mr-2" />
+                    Créer le webhook
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsCreateOpen(false)} size="lg">
+                    Annuler
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -362,82 +391,92 @@ const WebhookManager = () => {
         </div>
       </div>
 
-      <div className="flex gap-4">
-        <Select value={selectedOrg} onValueChange={setSelectedOrg}>
-          <SelectTrigger className="w-[280px]">
-            <SelectValue placeholder="Filtrer par organisation" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Toutes les organisations</SelectItem>
-            {orgs.map((org) => (
-              <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-2">
+          <Label className="text-sm font-medium">Filtrer par client:</Label>
+          <Select value={selectedOrg} onValueChange={setSelectedOrg}>
+            <SelectTrigger className="w-[280px]">
+              <SelectValue placeholder="Tous les clients" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">📋 Tous les clients</SelectItem>
+              {orgs.map((org) => (
+                <SelectItem key={org.id} value={org.id}>👤 {org.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <Badge variant="outline" className="ml-auto">
+          {filteredWebhooks.length} webhook(s) • {filteredWorkflows.length} workflow(s)
+        </Badge>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Webhook className="h-5 w-5" />
-              Webhooks N8N
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <Card className="shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Webhook className="h-5 w-5 text-primary" />
+                Webhooks N8N
+              </div>
+              <Badge variant="secondary">{filteredWebhooks.length}</Badge>
             </CardTitle>
-            <CardDescription>Points de réception des automations</CardDescription>
+            <CardDescription>URLs de réception pour vos automations N8N</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Organisation</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredWebhooks.map((webhook) => (
-                    <TableRow key={webhook.id}>
-                      <TableCell className="font-medium">{webhook.name}</TableCell>
-                      <TableCell>{getOrgName(webhook.org_id)}</TableCell>
-                      <TableCell>
-                        <Badge variant={webhook.is_active ? "default" : "secondary"}>
-                          {webhook.is_active ? "Actif" : "Inactif"}
-                        </Badge>
-                      </TableCell>
-                       <TableCell>
-                         <div className="flex gap-2">
-                           <Button
-                             size="sm"
-                             variant="outline"
-                             onClick={() => toggleWebhookStatus(webhook.id, webhook.is_active)}
-                           >
-                             {webhook.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                           </Button>
-                           {webhook.is_active && !workflows.find(w => w.webhook_id === webhook.id) && (
-                             <Button
-                               size="sm"
-                               onClick={() => createQuickWorkflow(webhook.org_id, webhook.id, webhook.name)}
-                               className="bg-green-600 hover:bg-green-700"
-                             >
-                               + Agent
-                             </Button>
-                           )}
-                         </div>
-                       </TableCell>
-                    </TableRow>
-                  ))}
-                  {filteredWebhooks.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        Aucun webhook trouvé
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+            {filteredWebhooks.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Webhook className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                <p className="text-lg font-medium mb-2">Aucun webhook configuré</p>
+                <p className="text-sm">Créez votre premier webhook pour commencer</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredWebhooks.map((webhook) => {
+                  const hasWorkflow = workflows.find(w => w.webhook_id === webhook.id);
+                  return (
+                    <Card key={webhook.id} className="p-4 border-l-4 border-l-primary/20">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-semibold text-sm">{webhook.name}</h4>
+                            <Badge variant={webhook.is_active ? "default" : "secondary"} className="text-xs">
+                              {webhook.is_active ? "🟢 Actif" : "⭕ Inactif"}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-1">
+                            👤 {getOrgName(webhook.org_id)}
+                          </p>
+                          <p className="text-xs text-muted-foreground font-mono bg-muted/30 px-2 py-1 rounded truncate">
+                            {webhook.webhook_url}
+                          </p>
+                        </div>
+                        <div className="flex gap-1 ml-3">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => toggleWebhookStatus(webhook.id, webhook.is_active)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {webhook.is_active ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+                          </Button>
+                          {webhook.is_active && !hasWorkflow && (
+                            <Button
+                              size="sm"
+                              onClick={() => createQuickWorkflow(webhook.org_id, webhook.id, webhook.name)}
+                              className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700"
+                            >
+                              + Agent
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 
