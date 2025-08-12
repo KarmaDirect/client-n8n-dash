@@ -106,7 +106,7 @@ const Dashboard = () => {
       </section>
 
       <section className="mt-6">
-        <SupportSection orgId={orgId} />
+        <SupportSection orgId={orgId} calendlyUrl="https://calendly.com/hatim-moro-2002/30min" />
       </section>
     </main>
   );
