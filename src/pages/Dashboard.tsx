@@ -28,19 +28,41 @@ const Dashboard = () => {
   document.title = "Dashboard — n8n Client Hub";
 
   useEffect(() => {
+    console.log('Dashboard: Initial effect, checking impersonation mode...');
     // Vérifier si on est en mode impersonation (admin connecté dans un compte client)
     const impersonationData = localStorage.getItem("admin_impersonation");
     if (impersonationData) {
       const parsed = JSON.parse(impersonationData);
+      console.log('Dashboard: Impersonation mode detected:', parsed);
       setImpersonationMode(parsed);
       setOrgId(parsed.target_org_id);
       return;
     }
     
-    // Mode normal : utiliser l'org stockée
+    // Mode normal : utiliser l'org stockée ou chercher l'org par défaut
     const stored = localStorage.getItem("orgId");
-    if (stored) setOrgId(stored);
-  }, []);
+    console.log('Dashboard: Stored orgId from localStorage:', stored);
+    if (stored) {
+      setOrgId(stored);
+    } else if (user) {
+      // Si pas d'orgId stocké, chercher l'organisation de l'utilisateur
+      console.log('Dashboard: No stored orgId, fetching user organization...');
+      supabase
+        .from('organizations')
+        .select('id')
+        .eq('owner_id', user.id)
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Dashboard: Error fetching user org:', error);
+          } else if (data) {
+            console.log('Dashboard: Found user org:', data.id);
+            setOrgId(data.id);
+            localStorage.setItem("orgId", data.id);
+          }
+        });
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!orgId) return;
@@ -161,9 +183,18 @@ const Dashboard = () => {
         <SupportSection orgId={orgId} calendlyUrl="https://calendly.com/hatim-moro-2002/30min" />
       </section>
 
-      {orgId && (
+      {orgId ? (
         <section className="mt-6">
-          <WorkflowPanel orgId={orgId} />
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">
+              OrgID actuel: {orgId} (Debug - sera supprimé)
+            </p>
+            <WorkflowPanel orgId={orgId} />
+          </div>
+        </section>
+      ) : (
+        <section className="mt-6">
+          <p className="text-red-500">Aucune organisation sélectionnée (Debug)</p>
         </section>
       )}
     </main>

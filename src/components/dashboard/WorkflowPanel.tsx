@@ -45,6 +45,7 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
   }, [orgId]);
 
   const fetchData = async () => {
+    console.log('WorkflowPanel: fetchData called with orgId:', orgId);
     try {
       const [workflowsRes, executionsRes, webhooksRes] = await Promise.all([
         supabase
@@ -66,6 +67,10 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
           .eq('is_active', true)
       ]);
 
+      console.log('WorkflowPanel: workflowsRes:', workflowsRes);
+      console.log('WorkflowPanel: executionsRes:', executionsRes);
+      console.log('WorkflowPanel: webhooksRes:', webhooksRes);
+
       if (workflowsRes.error) throw workflowsRes.error;
       if (executionsRes.error) throw executionsRes.error;
       if (webhooksRes.error) throw webhooksRes.error;
@@ -73,7 +78,10 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
       setWorkflows(workflowsRes.data || []);
       setExecutions(executionsRes.data || []);
       setWebhooks(webhooksRes.data || []);
+      
+      console.log('WorkflowPanel: Final workflows set:', workflowsRes.data || []);
     } catch (error: any) {
+      console.error('WorkflowPanel: Error fetching data:', error);
       toast.error('Erreur lors du chargement: ' + error.message);
     } finally {
       setLoading(false);
