@@ -5,10 +5,12 @@ import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface EventItem { id: string; type: string; created_at: string; org_id: string; meta: any }
 interface RunItem { id: string; status: string; started_at: string; finished_at: string | null; workflow_id: string }
-
+interface OrgItem { id: string; name: string; created_at: string }
 const Admin = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -17,6 +19,13 @@ const Admin = () => {
   const [counts, setCounts] = useState<{ orgs: number; workflows: number; leads7d: number; errors7d: number }>({ orgs: 0, workflows: 0, leads7d: 0, errors7d: 0 });
   const [events, setEvents] = useState<EventItem[]>([]);
   const [runs, setRuns] = useState<RunItem[]>([]);
+  const [orgs, setOrgs] = useState<OrgItem[]>([]);
+  const [orgSearch, setOrgSearch] = useState("");
+  const filteredOrgs = useMemo(() => {
+    const q = orgSearch.trim().toLowerCase();
+    if (!q) return orgs;
+    return orgs.filter(o => o.name.toLowerCase().includes(q));
+  }, [orgs, orgSearch]);
 
   useEffect(() => {
     document.title = "Admin Webstate — Vue d'ensemble";
@@ -66,6 +75,19 @@ const Admin = () => {
     fetchLists();
   }, [isAdmin]);
 
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase
+      .from('organizations')
+      .select('id,name,created_at')
+      .order('created_at', { ascending: false })
+      .limit(200)
+      .then(({ data, error }) => {
+        if (error) console.error(error);
+        setOrgs(data || []);
+      });
+  }, [isAdmin]);
+
   const header = useMemo(() => (
     <header className="mb-8 flex items-center justify-between">
       <div>
@@ -76,7 +98,12 @@ const Admin = () => {
         <Button variant="outline" onClick={() => navigate('/app')}>Retour au Dashboard</Button>
       </div>
     </header>
-  ), [navigate]);
+), [navigate]);
+
+  const viewDashboard = (orgId: string) => {
+    localStorage.setItem('orgId', orgId);
+    navigate('/app');
+  };
 
   if (checking) {
     return <main className="min-h-screen grid place-items-center">Chargement…</main>;
@@ -123,6 +150,57 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold">{counts.errors7d}</div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Comptes clients</CardTitle>
+            <CardDescription>Organisations</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between mb-4">
+              <Input
+                placeholder="Rechercher une organisation..."
+                value={orgSearch}
+                onChange={(e) => setOrgSearch(e.target.value)}
+                className="max-w-sm"
+              />
+              <div className="text-sm text-muted-foreground">{filteredOrgs.length} affichées</div>
+            </div>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nom</TableHead>
+                    <TableHead>Créée le</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredOrgs.map((o) => (
+                    <TableRow key={o.id}>
+                      <TableCell className="font-medium">{o.name}</TableCell>
+                      <TableCell>{new Date(o.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right">
+                        <Button size="sm" variant="outline" onClick={() => viewDashboard(o.id)}>
+                          Voir le Dashboard
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {filteredOrgs.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center text-sm text-muted-foreground">
+                        Aucune organisation trouvée.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </section>
