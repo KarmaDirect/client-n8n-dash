@@ -6,8 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { TenantSwitcher } from "@/components/TenantSwitcher";
 import { toast } from "sonner";
 import { SubscriptionPanel } from "@/components/SubscriptionPanel";
-
-interface Workflow { id: string; name: string; n8n_workflow_id: string | null; is_active: boolean; }
+import { SiteSection } from "@/components/dashboard/SiteSection";
+import { AutomationSection } from "@/components/dashboard/AutomationSection";
+import { ActivitySection } from "@/components/dashboard/ActivitySection";
+import { SupportSection } from "@/components/dashboard/SupportSection";
+interface Workflow { id: string; name: string; n8n_workflow_id: string | null; is_active: boolean; description?: string | null }
 interface Run { id: string; workflow_id: string; status: string; started_at: string; finished_at: string | null; }
 
 const Dashboard = () => {
@@ -28,7 +31,7 @@ const Dashboard = () => {
     if (!orgId) return;
     localStorage.setItem("orgId", orgId);
     setLoading(true);
-    supabase.from("workflows").select("id,name,n8n_workflow_id,is_active").eq("org_id", orgId).order("created_at", { ascending: true }).then(({ data, error }) => {
+    supabase.from("workflows").select("id,name,n8n_workflow_id,is_active,description").eq("org_id", orgId).order("created_at", { ascending: true }).then(({ data, error }) => {
       if (error) console.error(error);
       setWorkflows(data ?? []);
       setLoading(false);
@@ -70,57 +73,40 @@ const Dashboard = () => {
         <SubscriptionPanel />
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <section className="mb-8">
         <Card>
           <CardHeader>
-            <CardTitle>Workflows</CardTitle>
-            <CardDescription>Registered workflows in this workspace</CardDescription>
+            <CardTitle>Votre système Webstate travaille pour vous ✨</CardTitle>
+            <CardDescription>Aperçu motivant des gains et résultats (exemple)</CardDescription>
           </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-sm text-muted-foreground">Loading…</div>
-            ) : workflows.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No workflows yet. Add one to get started.</div>
-            ) : (
-              <ul className="space-y-3">
-                {workflows.map(w => (
-                  <li key={w.id} className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{w.name}</div>
-                      <div className="text-xs text-muted-foreground">n8n id: {w.n8n_workflow_id || '—'}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" onClick={() => triggerRun(w)}>Trigger</Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+          <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <div className="text-sm text-muted-foreground">ROI estimé</div>
+              <div className="text-2xl font-semibold">+312%</div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Temps gagné</div>
+              <div className="text-2xl font-semibold">12h / semaine</div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Leads générés</div>
+              <div className="text-2xl font-semibold">48 / mois</div>
+            </div>
           </CardContent>
         </Card>
+      </section>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent runs</CardTitle>
-            <CardDescription>Realtime status stream</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {runsRef.current.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No runs yet.</div>
-            ) : (
-              <ul className="space-y-3 max-h-96 overflow-auto pr-2">
-                {runsRef.current.map(r => (
-                  <li key={r.id} className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{r.status}</div>
-                      <div className="text-xs text-muted-foreground">{new Date(r.started_at).toLocaleString()}</div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SiteSection orgId={orgId} />
+        <AutomationSection workflows={workflows} onTrigger={(w) => triggerRun(w)} />
+      </section>
+
+      <section className="mt-6">
+        <ActivitySection runs={runsRef.current} />
+      </section>
+
+      <section className="mt-6">
+        <SupportSection orgId={orgId} />
       </section>
     </main>
   );

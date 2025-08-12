@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      documents: {
+        Row: {
+          created_at: string
+          doc_type: string | null
+          file_path: string
+          id: string
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          doc_type?: string | null
+          file_path: string
+          id?: string
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          doc_type?: string | null
+          file_path?: string
+          id?: string
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          id: string
+          meta: Json | null
+          org_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          org_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          org_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          org_id: string
+          source: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          org_id: string
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          org_id?: string
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -111,6 +192,66 @@ export type Database = {
         }
         Relationships: []
       }
+      pages: {
+        Row: {
+          created_at: string
+          id: string
+          org_id: string
+          slug: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          org_id: string
+          slug?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          org_id?: string
+          slug?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sites: {
+        Row: {
+          created_at: string
+          id: string
+          org_id: string
+          screenshot_url: string | null
+          site_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          org_id: string
+          screenshot_url?: string | null
+          site_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          org_id?: string
+          screenshot_url?: string | null
+          site_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
@@ -143,6 +284,36 @@ export type Database = {
           subscription_end?: string | null
           subscription_tier?: string | null
           updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          attachments: Json | null
+          author: string
+          created_at: string
+          id: string
+          message: string
+          org_id: string
+          user_id: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          author?: string
+          created_at?: string
+          id?: string
+          message: string
+          org_id: string
+          user_id?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          author?: string
+          created_at?: string
+          id?: string
+          message?: string
+          org_id?: string
           user_id?: string | null
         }
         Relationships: []
@@ -185,6 +356,7 @@ export type Database = {
       workflows: {
         Row: {
           created_at: string
+          description: string | null
           id: string
           is_active: boolean
           n8n_workflow_id: string | null
@@ -194,6 +366,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          description?: string | null
           id?: string
           is_active?: boolean
           n8n_workflow_id?: string | null
@@ -203,6 +376,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          description?: string | null
           id?: string
           is_active?: boolean
           n8n_workflow_id?: string | null
