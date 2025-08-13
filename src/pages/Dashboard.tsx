@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TenantSwitcher } from "@/components/TenantSwitcher";
+
 import { toast } from "sonner";
 import { SubscriptionPanel } from "@/components/SubscriptionPanel";
 import { SiteSection } from "@/components/dashboard/SiteSection";
@@ -178,9 +178,6 @@ const Dashboard = () => {
 
       {!impersonationMode && (
         <>
-          <section className="mb-10">
-            <TenantSwitcher value={orgId} onChange={setOrgId} />
-          </section>
 
           <section id="subscription" className="mb-10">
             <SubscriptionPanel />
