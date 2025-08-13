@@ -30,6 +30,11 @@ interface WorkflowExecution {
 interface WebhookItem {
   id: string;
   webhook_url: string;
+  webhook_type: string;
+  execution_method: string;
+  form_fields: any;
+  schedule_config: any;
+  response_format: string;
 }
 
 const WorkflowPanel = ({ orgId }: { orgId: string }) => {
@@ -62,7 +67,7 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
           .limit(10),
         supabase
           .from('webhooks')
-          .select('id, webhook_url')
+          .select('id, webhook_url, webhook_type, execution_method, form_fields, schedule_config, response_format')
           .eq('org_id', orgId)
           .eq('is_active', true)
       ]);
@@ -121,10 +126,26 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
         return;
       }
 
-      // Execute the webhook
-      const response = await fetch('https://webstate-workflows.app.n8n.cloud/webhook-test/webhook-test', {
-        method: 'GET'
-      });
+      // Execute the webhook with configured method and URL
+      const fetchOptions: RequestInit = {
+        method: webhook.execution_method || 'GET'
+      };
+
+      // Add body for POST/PUT requests
+      if (webhook.execution_method === 'POST' || webhook.execution_method === 'PUT') {
+        fetchOptions.headers = {
+          'Content-Type': 'application/json',
+        };
+        fetchOptions.body = JSON.stringify({
+          source: 'webstate_dashboard',
+          user_id: user.id,
+          org_id: orgId,
+          workflow_id: workflowId,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      const response = await fetch(webhook.webhook_url, fetchOptions);
 
       const responseData = await response.text();
       
@@ -232,12 +253,28 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
               {workflows.map((workflow) => {
                 const { executionsLastHour, executionsLastDay } = getUsageInfo(workflow);
                 const canExecute = canExecuteWorkflow(workflow);
+                const webhook = webhooks.find(w => w.id === workflow.webhook_id);
                 
                 return (
                   <Card key={workflow.id} className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <h4 className="font-semibold">{workflow.name}</h4>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-semibold">{workflow.name}</h4>
+                          {webhook && (
+                            <Badge variant="outline" className="text-xs">
+                              {webhook.webhook_type === 'button' && '🔘 Bouton'}
+                              {webhook.webhook_type === 'form' && '📝 Formulaire'}
+                              {webhook.webhook_type === 'schedule' && '⏰ Programmé'}
+                              {webhook.webhook_type === 'manual' && '📋 Manuel'}
+                            </Badge>
+                          )}
+                          {webhook && (
+                            <Badge variant="secondary" className="text-xs">
+                              {webhook.execution_method}
+                            </Badge>
+                          )}
+                        </div>
                         {workflow.description && (
                           <p className="text-sm text-muted-foreground mt-1">
                             {workflow.description}
@@ -267,20 +304,44 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => executeWorkflow(workflow.id)}
-                          disabled={!canExecute || executing === workflow.id}
-                        >
-                          {executing === workflow.id ? (
-                            "Exécution..."
-                          ) : (
-                            <>
-                              <Play className="h-4 w-4 mr-1" />
-                              Lancer
-                            </>
-                          )}
-                        </Button>
+                        {webhook?.webhook_type === 'button' && (
+                          <Button
+                            size="sm"
+                            onClick={() => executeWorkflow(workflow.id)}
+                            disabled={!canExecute || executing === workflow.id}
+                          >
+                            {executing === workflow.id ? (
+                              "Exécution..."
+                            ) : (
+                              <>
+                                <Play className="h-4 w-4 mr-1" />
+                                Lancer
+                              </>
+                            )}
+                          </Button>
+                        )}
+                        
+                        {webhook?.webhook_type === 'form' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={!canExecute}
+                          >
+                            📝 Formulaire
+                          </Button>
+                        )}
+                        
+                        {webhook?.webhook_type === 'schedule' && (
+                          <Badge variant="outline" className="text-xs">
+                            ⏰ Automatique
+                          </Badge>
+                        )}
+                        
+                        {webhook?.webhook_type === 'manual' && (
+                          <Badge variant="secondary" className="text-xs">
+                            📋 Manuel
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </Card>

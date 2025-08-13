@@ -343,31 +343,46 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          execution_method: string | null
+          form_fields: Json | null
           id: string
           is_active: boolean
           name: string
           org_id: string
+          response_format: string | null
+          schedule_config: Json | null
           updated_at: string
+          webhook_type: string | null
           webhook_url: string
         }
         Insert: {
           created_at?: string
           description?: string | null
+          execution_method?: string | null
+          form_fields?: Json | null
           id?: string
           is_active?: boolean
           name: string
           org_id: string
+          response_format?: string | null
+          schedule_config?: Json | null
           updated_at?: string
+          webhook_type?: string | null
           webhook_url: string
         }
         Update: {
           created_at?: string
           description?: string | null
+          execution_method?: string | null
+          form_fields?: Json | null
           id?: string
           is_active?: boolean
           name?: string
           org_id?: string
+          response_format?: string | null
+          schedule_config?: Json | null
           updated_at?: string
+          webhook_type?: string | null
           webhook_url?: string
         }
         Relationships: []

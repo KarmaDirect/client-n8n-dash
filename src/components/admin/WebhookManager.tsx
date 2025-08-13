@@ -20,6 +20,11 @@ interface WebhookItem {
   is_active: boolean;
   org_id: string;
   created_at: string;
+  webhook_type: string;
+  execution_method: string;
+  form_fields: any;
+  schedule_config: any;
+  response_format: string;
 }
 
 interface WorkflowItem {
@@ -51,7 +56,12 @@ const WebhookManager = () => {
     webhook_url: "",
     description: "",
     org_id: "",
-    is_active: true
+    is_active: true,
+    webhook_type: "button",
+    execution_method: "GET",
+    response_format: "json",
+    form_fields: [],
+    schedule_config: null
   });
 
   const [workflowForm, setWorkflowForm] = useState({
@@ -125,7 +135,18 @@ const WebhookManager = () => {
 
       toast.success(`Agent "${webhookForm.name}" créé avec succès pour ${getOrgName(webhookForm.org_id)} !`);
       setIsCreateOpen(false);
-      setWebhookForm({ name: "", webhook_url: "", description: "", org_id: "", is_active: true });
+      setWebhookForm({ 
+        name: "", 
+        webhook_url: "", 
+        description: "", 
+        org_id: "", 
+        is_active: true,
+        webhook_type: "button",
+        execution_method: "GET",
+        response_format: "json",
+        form_fields: [],
+        schedule_config: null
+      });
       setWorkflowForm({ name: "", description: "", webhook_id: "", usage_limit_per_hour: "", usage_limit_per_day: "", org_id: "", is_active: true });
       fetchData();
     } catch (error: any) {
@@ -246,6 +267,97 @@ Ex: https://n8n.mondomaine.com/webhook/12345-67890-abcde..."
                     placeholder="Ex: Envoie automatiquement un SMS et un email de confirmation après votre action"
                     rows={2}
                   />
+                </div>
+
+                <div className="space-y-4 p-4 bg-muted/20 rounded-lg">
+                  <Label className="text-base font-medium">Mode d'exécution</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="webhook-type">Type d'interface</Label>
+                      <Select value={webhookForm.webhook_type} onValueChange={(value) => setWebhookForm({...webhookForm, webhook_type: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Type d'interface" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="button">🔘 Bouton simple</SelectItem>
+                          <SelectItem value="form">📝 Formulaire personnalisé</SelectItem>
+                          <SelectItem value="schedule">⏰ Tâche programmée</SelectItem>
+                          <SelectItem value="manual">📋 Manuel (pas d'interface)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="execution-method">Méthode HTTP</Label>
+                      <Select value={webhookForm.execution_method} onValueChange={(value) => setWebhookForm({...webhookForm, execution_method: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Méthode" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="GET">GET (simple)</SelectItem>
+                          <SelectItem value="POST">POST (avec données)</SelectItem>
+                          <SelectItem value="PUT">PUT (mise à jour)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {webhookForm.webhook_type === 'form' && (
+                    <div className="space-y-2">
+                      <Label>Configuration du formulaire</Label>
+                      <Textarea
+                        placeholder="Définissez vos champs JSON:
+{
+  &quot;fields&quot;: [
+    {&quot;name&quot;: &quot;email&quot;, &quot;type&quot;: &quot;email&quot;, &quot;label&quot;: &quot;Email du client&quot;, &quot;required&quot;: true},
+    {&quot;name&quot;: &quot;message&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;label&quot;: &quot;Message&quot;, &quot;required&quot;: false}
+  ]
+}"
+                        rows={4}
+                        className="font-mono text-xs"
+                        value={JSON.stringify(webhookForm.form_fields, null, 2)}
+                        onChange={(e) => {
+                          try {
+                            const parsed = JSON.parse(e.target.value);
+                            setWebhookForm({...webhookForm, form_fields: parsed});
+                          } catch (error) {
+                            // Invalid JSON, keep the string for editing
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {webhookForm.webhook_type === 'schedule' && (
+                    <div className="space-y-2">
+                      <Label>Configuration de planification</Label>
+                      <Textarea
+                        placeholder="Configuration cron et paramètres:
+{
+  &quot;cron&quot;: &quot;0 9 * * 1&quot;,
+  &quot;description&quot;: &quot;Tous les lundis à 9h&quot;,
+  &quot;timezone&quot;: &quot;Europe/Paris&quot;
+}"
+                        rows={3}
+                        className="font-mono text-xs"
+                        value={JSON.stringify(webhookForm.schedule_config, null, 2)}
+                        onChange={(e) => {
+                          try {
+                            const parsed = JSON.parse(e.target.value);
+                            setWebhookForm({...webhookForm, schedule_config: parsed});
+                          } catch (error) {
+                            // Invalid JSON, keep the string for editing
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  <div className="text-xs text-muted-foreground">
+                    {webhookForm.webhook_type === 'button' && '💡 Interface simple avec un bouton "Lancer"'}
+                    {webhookForm.webhook_type === 'form' && '💡 Le client remplira un formulaire avant exécution'}
+                    {webhookForm.webhook_type === 'schedule' && '💡 Exécution automatique selon planning'}
+                    {webhookForm.webhook_type === 'manual' && '💡 Visible dans les historiques uniquement'}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
