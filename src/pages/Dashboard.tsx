@@ -232,7 +232,7 @@ const Dashboard = () => {
       </section>
 
       <section className="mt-6">
-        <ActivitySection runs={runsRef.current} />
+        <ActivitySection runs={runsRef.current} orgId={orgId} />
       </section>
 
       <section id="support" className="mt-6">

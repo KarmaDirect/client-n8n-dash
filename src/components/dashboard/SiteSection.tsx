@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,47 @@ import { toast } from "sonner";
 export const SiteSection = ({ orgId }: { orgId?: string }) => {
   const { user } = useAuth();
   const [subject, setSubject] = useState("Demande de modification de page");
-  const [message, setMessage] = useState("Bonjour, j’aimerais modifier …");
+  const [message, setMessage] = useState("Bonjour, j'aimerais modifier …");
   const [loading, setLoading] = useState(false);
+  const [pages, setPages] = useState<any[]>([]);
+  const [siteInfo, setSiteInfo] = useState<any>(null);
+  const [loadingData, setLoadingData] = useState(true);
+
+  useEffect(() => {
+    if (!orgId) return;
+    
+    const fetchSiteData = async () => {
+      setLoadingData(true);
+      try {
+        // Fetch pages
+        const { data: pagesData, error: pagesError } = await supabase
+          .from('pages')
+          .select('*')
+          .eq('org_id', orgId)
+          .order('created_at', { ascending: true });
+        
+        if (pagesError) throw pagesError;
+        setPages(pagesData || []);
+
+        // Fetch site info
+        const { data: siteData, error: siteError } = await supabase
+          .from('sites')
+          .select('*')
+          .eq('org_id', orgId)
+          .maybeSingle();
+        
+        if (siteError && siteError.code !== 'PGRST116') throw siteError;
+        setSiteInfo(siteData);
+      } catch (error: any) {
+        console.error('Error fetching site data:', error);
+        toast.error('Erreur lors du chargement des données du site');
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    fetchSiteData();
+  }, [orgId]);
 
   const sendRequest = async () => {
     if (!orgId) return toast.error("Sélectionnez un espace de travail.");
@@ -26,8 +65,19 @@ export const SiteSection = ({ orgId }: { orgId?: string }) => {
     if (error) return toast.error(error.message);
     toast.success("Demande envoyée ✅");
     setSubject("Demande de modification de page");
-    setMessage("Bonjour, j’aimerais modifier …");
+    setMessage("Bonjour, j'aimerais modifier …");
   };
+
+  const getStatusDisplay = (status: string) => {
+    switch (status) {
+      case 'en_construction': return { label: 'En construction', color: 'orange' };
+      case 'brouillon': return { label: 'Brouillon', color: 'gray' };
+      case 'publie': return { label: 'Publié', color: 'green' };
+      default: return { label: status, color: 'gray' };
+    }
+  };
+
+  const hasPublishedSite = siteInfo?.status === 'publie' || siteInfo?.site_url;
 
   return (
     <Card className="dashboard-card">
@@ -39,26 +89,55 @@ export const SiteSection = ({ orgId }: { orgId?: string }) => {
         <CardDescription>Statut, aperçu, pages et demandes de modification</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm text-muted-foreground">Statut</div>
-            <div className="font-medium">En construction</div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" disabled>
-              Voir mon site
-            </Button>
-          </div>
-        </div>
+        {loadingData ? (
+          <div className="text-sm text-muted-foreground">Chargement...</div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-muted-foreground">Statut</div>
+                <div className="font-medium">
+                  {siteInfo ? getStatusDisplay(siteInfo.status).label : 'Aucun site configuré'}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {hasPublishedSite && siteInfo?.site_url ? (
+                  <Button variant="outline" asChild>
+                    <a href={siteInfo.site_url} target="_blank" rel="noopener noreferrer">
+                      Voir mon site
+                    </a>
+                  </Button>
+                ) : (
+                  <Button variant="outline" disabled>
+                    Site en préparation
+                  </Button>
+                )}
+              </div>
+            </div>
 
-        <div>
-          <div className="text-sm font-medium mb-2">Pages</div>
-          <ul className="text-sm text-muted-foreground list-disc pl-5">
-            <li>Accueil — brouillon</li>
-            <li>Contact — publié</li>
-            <li>Offre — brouillon</li>
-          </ul>
-        </div>
+            <div>
+              <div className="text-sm font-medium mb-2">Pages {pages.length > 0 && `(${pages.length})`}</div>
+              {pages.length === 0 ? (
+                <div className="text-sm text-muted-foreground">Aucune page créée pour le moment.</div>
+              ) : (
+                <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
+                  {pages.map((page) => {
+                    const statusInfo = getStatusDisplay(page.status);
+                    return (
+                      <li key={page.id}>
+                        <span className="font-medium text-foreground">{page.title}</span>
+                        <span className="mx-2">—</span>
+                        <span style={{ color: statusInfo.color === 'green' ? '#22c55e' : statusInfo.color === 'orange' ? '#f59e0b' : '#6b7280' }}>
+                          {statusInfo.label}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </>
+        )}
 
         <div className="space-y-2">
           <div className="text-sm font-medium">Demander une modification ✍️</div>
