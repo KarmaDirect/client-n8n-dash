@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import webstateLogo from "@/assets/webstate-logo.png";
 
 const Auth = () => {
   const { signIn, signUp, user } = useAuth();
@@ -43,7 +44,17 @@ const Auth = () => {
   return (
     <main className="min-h-screen grid place-items-center px-4">
       <section className="w-full max-w-md hero-aurora">
-        <Card>
+        <div className="text-center mb-8">
+          <img 
+            src={webstateLogo} 
+            alt="Webstate" 
+            className="logo-webstate h-16 mx-auto mb-4"
+          />
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Webstate Admin
+          </h1>
+        </div>
+        <Card className="auth-card">
           <CardHeader>
             <CardTitle>{mode === "signin" ? "Sign in" : "Create your account"}</CardTitle>
             <CardDescription>Access your client workspace and workflows</CardDescription>
