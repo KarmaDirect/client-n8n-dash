@@ -528,12 +528,42 @@ console.log('Session:', session);
 
 ### Checklist avant commit
 
+- [ ]	Level	Issue	Actions
+error
+Customer Email Addresses Could Be Stolen by Hackers	Try to Fix
+Issue Description
+The 'subscribers' table is publicly readable and contains email addresses and payment information (stripe_customer_id). Hackers could steal this data to spam customers or commit payment fraud. The current RLS policies only protect data when users are authenticated, but the table remains accessible to anonymous users.
+
+LLM Database Check
+EXPOSED_SENSITIVE_DATA
+error
+Internal Business Operations Could Be Exposed to Competitors	Try to Fix
+Issue Description
+Multiple business-critical tables (leads, workflows, organization_subscriptions, support_messages) are publicly readable and contain sensitive business information including lead data, workflow configurations, subscription details, and support conversations. Competitors could access this data to understand your business operations and customer interactions. Ensure RLS policies block anonymous access to these tables.
+
+LLM Database Check
+PUBLIC_BUSINESS_DATA
+error
+Webhook URLs Could Be Exploited by Attackers	Try to Fix
+Issue Description
+The 'webhooks' table is publicly readable and contains webhook URLs and execution methods. Attackers could discover and abuse these endpoints to trigger unauthorized actions or access internal systems. Add RLS policies to prevent anonymous access to webhook configurations.
+
+LLM Database Check
+EXPOSED_WEBHOOK_URLS
+warn
+Leaked Password Protection Disabled	
+Issue Description
+Leaked password protection is currently disabled. Remediation: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+
+Supabase
+SUPA_auth_leaked_password_protection
 - [ ] Les nouveaux composants utilisent le design system
 - [ ] Les tables ont des politiques RLS appropriées
 - [ ] L'isolation client est respectée
 - [ ] L'admin peut gérer les nouveaux éléments
 - [ ] Pas de données hardcodées
 - [ ] Types TypeScript à jour
+
 
 ---
 
