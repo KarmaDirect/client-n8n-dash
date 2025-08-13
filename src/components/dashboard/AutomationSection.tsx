@@ -22,7 +22,7 @@ export const AutomationSection = ({
     <Card className="dashboard-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
-          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-400 to-pink-500"></div>
+          <div className="w-2 h-2 rounded-full bg-primary/60"></div>
           Automatisations IA 🤖
         </CardTitle>
         <CardDescription>

@@ -200,27 +200,27 @@ const Dashboard = () => {
           <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="metric-card p-6 rounded-xl">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-emerald-500"></div>
+                <div className="w-3 h-3 rounded-full bg-primary/60"></div>
                 <div className="text-sm font-medium text-muted-foreground">ROI estimé</div>
               </div>
-              <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">+312%</div>
-              <div className="text-xs text-green-500 mt-1">↗ +23% ce mois</div>
+              <div className="text-3xl font-bold text-primary">+312%</div>
+              <div className="text-xs text-muted-foreground mt-1">↗ +23% ce mois</div>
             </div>
             <div className="metric-card p-6 rounded-xl">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500"></div>
+                <div className="w-3 h-3 rounded-full bg-primary/60"></div>
                 <div className="text-sm font-medium text-muted-foreground">Temps gagné</div>
               </div>
-              <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent">12h</div>
-              <div className="text-xs text-blue-500 mt-1">par semaine</div>
+              <div className="text-3xl font-bold text-primary">12h</div>
+              <div className="text-xs text-muted-foreground mt-1">par semaine</div>
             </div>
             <div className="metric-card p-6 rounded-xl">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-400 to-pink-500"></div>
+                <div className="w-3 h-3 rounded-full bg-primary/60"></div>
                 <div className="text-sm font-medium text-muted-foreground">Leads générés</div>
               </div>
-              <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">48</div>
-              <div className="text-xs text-purple-500 mt-1">ce mois-ci</div>
+              <div className="text-3xl font-bold text-primary">48</div>
+              <div className="text-xs text-muted-foreground mt-1">ce mois-ci</div>
             </div>
           </CardContent>
         </Card>

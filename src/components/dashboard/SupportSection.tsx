@@ -53,10 +53,13 @@ export const SupportSection = ({ orgId, calendlyUrl = "https://calendly.com/your
   };
 
   return (
-    <Card>
+    <Card className="dashboard-card">
       <CardHeader>
-        <CardTitle>Support & Communication 💬</CardTitle>
-        <CardDescription>Échangez avec l’équipe et accédez aux documents</CardDescription>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <div className="w-2 h-2 rounded-full bg-primary/60"></div>
+          Support & Communication 💬
+        </CardTitle>
+        <CardDescription>Échangez avec l'équipe et accédez aux documents</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-3">

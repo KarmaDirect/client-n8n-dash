@@ -19,7 +19,7 @@ export const ActivitySection = ({ runs }: { runs: Run[] }) => {
       <Card className="dashboard-card lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">
-            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-500"></div>
+            <div className="w-2 h-2 rounded-full bg-primary/60"></div>
             Activité & Performances 📈
           </CardTitle>
           <CardDescription>Leads générés et taux de complétion (exemple)</CardDescription>
@@ -41,7 +41,7 @@ export const ActivitySection = ({ runs }: { runs: Run[] }) => {
       <Card className="dashboard-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-orange-400 to-red-500"></div>
+            <div className="w-2 h-2 rounded-full bg-primary/60"></div>
             Timeline
           </CardTitle>
           <CardDescription>Dernières exécutions</CardDescription>

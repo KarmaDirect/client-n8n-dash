@@ -272,9 +272,10 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="dashboard-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <div className="w-2 h-2 rounded-full bg-primary/60"></div>
             <Play className="h-5 w-5" />
             Mes Agents N8N
           </CardTitle>
@@ -400,9 +401,12 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
       </Card>
 
       {executions.length > 0 && (
-        <Card>
+        <Card className="dashboard-card">
           <CardHeader>
-            <CardTitle>Historique des exécutions</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-primary/60"></div>
+              Historique des exécutions
+            </CardTitle>
             <CardDescription>Dernières activités de vos workflows</CardDescription>
           </CardHeader>
           <CardContent>

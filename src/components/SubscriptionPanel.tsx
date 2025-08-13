@@ -58,9 +58,12 @@ export const SubscriptionPanel = () => {
   const renew = status?.subscription_end ? new Date(status.subscription_end).toLocaleDateString() : null;
 
   return (
-    <Card>
+    <Card className="dashboard-card">
       <CardHeader>
-        <CardTitle>Formules & Abonnement</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <div className="w-2 h-2 rounded-full bg-primary/60"></div>
+          Formules & Abonnement
+        </CardTitle>
         <CardDescription>Gérez votre abonnement et accédez au portail Stripe</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
