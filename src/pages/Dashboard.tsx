@@ -25,6 +25,7 @@ const Dashboard = () => {
   const [impersonationMode, setImpersonationMode] = useState<any>(null);
   const runsRef = useRef<Run[]>([]);
   const [, forceTick] = useState(0);
+  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   document.title = "Dashboard — n8n Client Hub";
 
   useEffect(() => {
@@ -87,6 +88,23 @@ const Dashboard = () => {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
+  useEffect(() => {
+    if (!user) { setIsSubscribed(null); return; }
+    supabase
+      .from('subscribers')
+      .select('subscribed')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Subscription fetch error', error);
+          setIsSubscribed(null);
+        } else {
+          setIsSubscribed(Boolean(data?.subscribed));
+        }
+      });
+  }, [user]);
+
   const triggerRun = async (w: Workflow) => {
     // Requires secrets to be set. For now, show guidance.
     toast.info("To trigger n8n, add your N8N_BASE_URL and N8N_API_KEY secrets.");
@@ -97,7 +115,6 @@ const Dashboard = () => {
     setImpersonationMode(null);
     navigate('/admin');
   };
-
   return (
     <main className="min-h-screen px-4 py-10 container hero-aurora">
       <header className="mb-8">
@@ -135,19 +152,43 @@ const Dashboard = () => {
         </div>
       </header>
 
+      {isSubscribed === false && (
+        <div className="mb-6 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Abonnement requis</p>
+              <p className="text-sm text-muted-foreground">Activez votre abonnement pour lancer vos automations.</p>
+            </div>
+            <Button variant="secondary" onClick={() => document.getElementById('subscription')?.scrollIntoView({ behavior: 'smooth' })}>
+              Voir les formules
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <nav className="mb-8 flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Vue d'ensemble</Button>
+        <Button variant="outline" size="sm" onClick={() => document.getElementById('workflows')?.scrollIntoView({ behavior: 'smooth' })}>Automations</Button>
+        {!impersonationMode && (
+          <Button variant="outline" size="sm" onClick={() => document.getElementById('subscription')?.scrollIntoView({ behavior: 'smooth' })}>Abonnement</Button>
+        )}
+        <Button variant="outline" size="sm" onClick={() => document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' })}>Support</Button>
+        <Button variant="outline" size="sm" onClick={() => document.getElementById('profile')?.scrollIntoView({ behavior: 'smooth' })}>Profil</Button>
+      </nav>
+
       {!impersonationMode && (
         <>
           <section className="mb-10">
             <TenantSwitcher value={orgId} onChange={setOrgId} />
           </section>
 
-          <section className="mb-10">
+          <section id="subscription" className="mb-10">
             <SubscriptionPanel />
           </section>
         </>
       )}
 
-      <section className="mb-8">
+      <section id="overview" className="mb-8">
         <Card>
           <CardHeader>
             <CardTitle>Votre système Webstate travaille pour vous ✨</CardTitle>
@@ -179,22 +220,17 @@ const Dashboard = () => {
         <ActivitySection runs={runsRef.current} />
       </section>
 
-      <section className="mt-6">
+      <section id="support" className="mt-6">
         <SupportSection orgId={orgId} calendlyUrl="https://calendly.com/hatim-moro-2002/30min" />
       </section>
 
       {orgId ? (
-        <section className="mt-6">
-          <div>
-            <p className="text-sm text-muted-foreground mb-2">
-              OrgID actuel: {orgId} (Debug - sera supprimé)
-            </p>
-            <WorkflowPanel orgId={orgId} />
-          </div>
+        <section id="workflows" className="mt-6">
+          <WorkflowPanel orgId={orgId} />
         </section>
       ) : (
         <section className="mt-6">
-          <p className="text-red-500">Aucune organisation sélectionnée (Debug)</p>
+          <p className="text-red-500">Aucune organisation sélectionnée</p>
         </section>
       )}
     </main>
