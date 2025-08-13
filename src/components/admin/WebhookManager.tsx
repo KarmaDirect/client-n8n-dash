@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Webhook, Settings, Play, Pause } from "lucide-react";
+import { Plus, Webhook, Settings, Play, Pause, Edit, Trash2, Save } from "lucide-react";
 
 interface WebhookItem {
   id: string;
@@ -49,6 +49,8 @@ const WebhookManager = () => {
   const [orgs, setOrgs] = useState<OrgItem[]>([]);
   const [selectedOrg, setSelectedOrg] = useState<string>("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingAgent, setEditingAgent] = useState<{ webhook: WebhookItem; workflow: WorkflowItem } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [webhookForm, setWebhookForm] = useState({
@@ -163,6 +165,106 @@ const WebhookManager = () => {
       
       if (error) throw error;
       toast.success('Statut mis à jour');
+      fetchData();
+    } catch (error: any) {
+      toast.error('Erreur: ' + error.message);
+    }
+  };
+
+  const openEditModal = (workflow: WorkflowItem) => {
+    const webhook = webhooks.find(w => w.id === workflow.webhook_id);
+    if (webhook) {
+      setEditingAgent({ webhook, workflow });
+      setWebhookForm({
+        name: webhook.name,
+        webhook_url: webhook.webhook_url,
+        description: webhook.description || "",
+        org_id: webhook.org_id,
+        is_active: webhook.is_active,
+        webhook_type: webhook.webhook_type || "button",
+        execution_method: webhook.execution_method || "GET",
+        response_format: webhook.response_format || "json",
+        form_fields: webhook.form_fields || [],
+        schedule_config: webhook.schedule_config || null
+      });
+      setWorkflowForm({
+        name: workflow.name,
+        description: workflow.description || "",
+        webhook_id: workflow.webhook_id || "",
+        usage_limit_per_hour: workflow.usage_limit_per_hour?.toString() || "",
+        usage_limit_per_day: workflow.usage_limit_per_day?.toString() || "",
+        org_id: workflow.org_id,
+        is_active: workflow.is_active
+      });
+      setIsEditOpen(true);
+    }
+  };
+
+  const updateAgent = async () => {
+    if (!editingAgent || !webhookForm.name || !webhookForm.webhook_url) {
+      toast.error('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    try {
+      // Mettre à jour le webhook
+      const { error: webhookError } = await supabase
+        .from('webhooks')
+        .update(webhookForm)
+        .eq('id', editingAgent.webhook.id);
+      
+      if (webhookError) throw webhookError;
+
+      // Mettre à jour le workflow
+      const workflowData = {
+        name: `Agent ${webhookForm.name}`,
+        description: webhookForm.description || `Automatisation ${webhookForm.name}`,
+        usage_limit_per_hour: workflowForm.usage_limit_per_hour ? parseInt(workflowForm.usage_limit_per_hour) : null,
+        usage_limit_per_day: workflowForm.usage_limit_per_day ? parseInt(workflowForm.usage_limit_per_day) : null,
+        is_active: webhookForm.is_active
+      };
+
+      const { error: workflowError } = await supabase
+        .from('workflows')
+        .update(workflowData)
+        .eq('id', editingAgent.workflow.id);
+      
+      if (workflowError) throw workflowError;
+
+      toast.success(`Agent "${webhookForm.name}" mis à jour avec succès !`);
+      setIsEditOpen(false);
+      setEditingAgent(null);
+      fetchData();
+    } catch (error: any) {
+      toast.error('Erreur: ' + error.message);
+    }
+  };
+
+  const deleteAgent = async (workflow: WorkflowItem) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'agent "${workflow.name}" ?`)) {
+      return;
+    }
+
+    try {
+      // Supprimer le workflow
+      const { error: workflowError } = await supabase
+        .from('workflows')
+        .delete()
+        .eq('id', workflow.id);
+      
+      if (workflowError) throw workflowError;
+
+      // Supprimer le webhook associé
+      if (workflow.webhook_id) {
+        const { error: webhookError } = await supabase
+          .from('webhooks')
+          .delete()
+          .eq('id', workflow.webhook_id);
+        
+        if (webhookError) throw webhookError;
+      }
+
+      toast.success(`Agent "${workflow.name}" supprimé avec succès`);
       fetchData();
     } catch (error: any) {
       toast.error('Erreur: ' + error.message);
@@ -406,6 +508,142 @@ Ex: https://n8n.mondomaine.com/webhook/12345-67890-abcde..."
               </div>
             </DialogContent>
           </Dialog>
+
+          {/* Modal d'édition */}
+          <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-xl">Modifier l'agent N8N</DialogTitle>
+                <DialogDescription>
+                  Modifiez la configuration de votre agent
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Client</Label>
+                    <Input 
+                      value={getOrgName(webhookForm.org_id)} 
+                      disabled 
+                      className="bg-muted"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="agent-name-edit">Nom de l'agent *</Label>
+                    <Input
+                      id="agent-name-edit"
+                      value={webhookForm.name}
+                      onChange={(e) => setWebhookForm({...webhookForm, name: e.target.value})}
+                      placeholder="Ex: Agent SMS & Email"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="webhook-url-edit" className="text-base font-medium">URL du webhook N8N *</Label>
+                  <div className="relative">
+                    <Textarea
+                      id="webhook-url-edit"
+                      value={webhookForm.webhook_url}
+                      onChange={(e) => setWebhookForm({...webhookForm, webhook_url: e.target.value})}
+                      placeholder="Collez ici votre URL complète N8N..."
+                      className="min-h-[80px] font-mono text-sm"
+                      rows={3}
+                    />
+                    <div className="absolute top-2 right-2">
+                      <Webhook className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="agent-desc-edit">Description pour le client</Label>
+                  <Textarea
+                    id="agent-desc-edit"
+                    value={webhookForm.description}
+                    onChange={(e) => setWebhookForm({...webhookForm, description: e.target.value})}
+                    placeholder="Ex: Envoie automatiquement un SMS et un email de confirmation après votre action"
+                    rows={2}
+                  />
+                </div>
+
+                <div className="space-y-4 p-4 bg-muted/20 rounded-lg">
+                  <Label className="text-base font-medium">Mode d'exécution</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Type d'interface</Label>
+                      <Select value={webhookForm.webhook_type} onValueChange={(value) => setWebhookForm({...webhookForm, webhook_type: value})}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="button">🔘 Bouton simple</SelectItem>
+                          <SelectItem value="form">📝 Formulaire personnalisé</SelectItem>
+                          <SelectItem value="schedule">⏰ Tâche programmée</SelectItem>
+                          <SelectItem value="manual">📋 Manuel (pas d'interface)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Méthode HTTP</Label>
+                      <Select value={webhookForm.execution_method} onValueChange={(value) => setWebhookForm({...webhookForm, execution_method: value})}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="GET">GET (simple)</SelectItem>
+                          <SelectItem value="POST">POST (avec données)</SelectItem>
+                          <SelectItem value="PUT">PUT (mise à jour)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Limite par heure</Label>
+                    <Input
+                      type="number"
+                      value={workflowForm.usage_limit_per_hour}
+                      onChange={(e) => setWorkflowForm({...workflowForm, usage_limit_per_hour: e.target.value})}
+                      placeholder="Ex: 10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Limite par jour</Label>
+                    <Input
+                      type="number"
+                      value={workflowForm.usage_limit_per_day}
+                      onChange={(e) => setWorkflowForm({...workflowForm, usage_limit_per_day: e.target.value})}
+                      placeholder="Ex: 50"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                  <div>
+                    <p className="font-medium">Activer l'agent</p>
+                    <p className="text-sm text-muted-foreground">L'agent sera disponible pour le client</p>
+                  </div>
+                  <Switch
+                    checked={webhookForm.is_active}
+                    onCheckedChange={(checked) => setWebhookForm({...webhookForm, is_active: checked})}
+                  />
+                </div>
+                
+                <div className="flex gap-3 pt-2">
+                  <Button onClick={updateAgent} className="flex-1" size="lg">
+                    <Save className="h-4 w-4 mr-2" />
+                    Sauvegarder
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsEditOpen(false)} size="lg">
+                    Annuler
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -462,6 +700,15 @@ Ex: https://n8n.mondomaine.com/webhook/12345-67890-abcde..."
                             <Badge variant={workflow.is_active ? "default" : "secondary"} className="text-xs">
                               {workflow.is_active ? "🟢 Actif" : "⭕ Inactif"}
                             </Badge>
+                            {webhook && (
+                              <Badge variant="outline" className="text-xs">
+                                {webhook.webhook_type === 'button' && '🔘'}
+                                {webhook.webhook_type === 'form' && '📝'}
+                                {webhook.webhook_type === 'schedule' && '⏰'}
+                                {webhook.webhook_type === 'manual' && '📋'}
+                                {webhook.execution_method}
+                              </Badge>
+                            )}
                           </div>
                           <div className="space-y-1">
                             <p className="text-sm text-muted-foreground">
@@ -494,11 +741,30 @@ Ex: https://n8n.mondomaine.com/webhook/12345-67890-abcde..."
                         <div className="flex gap-1 ml-3">
                           <Button
                             size="sm"
+                            variant="outline"
+                            onClick={() => openEditModal(workflow)}
+                            className="h-8 w-8 p-0"
+                            title="Modifier l'agent"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
                             variant="ghost"
                             onClick={() => webhook && toggleWebhookStatus(webhook.id, webhook.is_active)}
                             className="h-8 w-8 p-0"
+                            title={workflow.is_active ? "Désactiver" : "Activer"}
                           >
                             {workflow.is_active ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => deleteAgent(workflow)}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                            title="Supprimer l'agent"
+                          >
+                            <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
