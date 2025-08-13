@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import webstateLogo from "@/assets/webstate-logo.png";
 
 const Index = () => {
@@ -20,8 +21,8 @@ const Index = () => {
           Multi-tenant workspaces, role-based permissions, realtime run logs, and built-in subscriptions.
         </p>
         <div className="flex items-center justify-center gap-4">
-          <a href="/auth"><Button variant="hero" size="xl">Get started</Button></a>
-          <a href="/app"><Button variant="outline" size="xl">View dashboard</Button></a>
+          <Link to="/auth"><Button variant="hero" size="xl">Get started</Button></Link>
+          <Link to="/app"><Button variant="outline" size="xl">View dashboard</Button></Link>
         </div>
       </section>
     </main>
