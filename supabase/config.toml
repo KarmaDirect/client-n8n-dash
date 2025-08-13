@@ -2,3 +2,7 @@ project_id = "ijybwfdkiteebytdwhyu"
 
 [functions.bootstrap-admin]
 verify_jwt = false
+
+[functions.execute-webhook]
+verify_jwt = true
+

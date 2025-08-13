@@ -126,68 +126,29 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
         return;
       }
 
-      // Execute the webhook with configured method and URL
-      const fetchOptions: RequestInit = {
-        method: webhook.execution_method || 'GET'
-      };
-
-      // Add body for POST/PUT requests
-      if (webhook.execution_method === 'POST' || webhook.execution_method === 'PUT') {
-        fetchOptions.headers = {
-          'Content-Type': 'application/json',
-        };
-        fetchOptions.body = JSON.stringify({
-          source: 'webstate_dashboard',
-          user_id: user.id,
-          org_id: orgId,
+      // Execute via secure Edge Function
+      const { data: execData, error: execError } = await supabase.functions.invoke('execute-webhook', {
+        body: {
           workflow_id: workflowId,
-          timestamp: new Date().toISOString()
-        });
+        },
+      });
+
+      if (execError) {
+        throw new Error(execError.message);
       }
 
-      const response = await fetch(webhook.webhook_url, fetchOptions);
-
-      const responseData = await response.text();
-      
-      // Log the execution
-      const { error: logError } = await supabase
-        .from('workflow_executions')
-        .insert([{
-          workflow_id: workflowId,
-          org_id: orgId,
-          user_id: user.id,
-          status: response.ok ? 'success' : 'error',
-          response_data: { status: response.status, data: responseData }
-        }]);
-
-      if (logError) console.error('Log error:', logError);
-
-      // Update last executed timestamp
-      await supabase
-        .from('workflows')
-        .update({ last_executed_at: new Date().toISOString() })
-        .eq('id', workflowId);
-
-      if (response.ok) {
+      if (execData?.ok) {
         toast.success('Workflow exécuté avec succès');
       } else {
-        toast.error('Erreur lors de l\'exécution du workflow');
+        toast.error(execData?.error || 'Erreur lors de l\'exécution du workflow');
       }
 
-      fetchData(); // Refresh data
+      // Refresh data after execution
+      await fetchData();
     } catch (error: any) {
       toast.error('Erreur: ' + error.message);
       
-      // Log failed execution
-      await supabase
-        .from('workflow_executions')
-        .insert([{
-          workflow_id: workflowId,
-          org_id: orgId,
-          user_id: user.id,
-          status: 'error',
-          response_data: { error: error.message }
-        }]);
+      // Journalisation gérée côté serveur via l'Edge Function
     } finally {
       setExecuting(null);
     }
