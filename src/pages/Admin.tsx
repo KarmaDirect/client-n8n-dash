@@ -95,12 +95,14 @@ const Admin = () => {
     };
 
     const fetchLists = async () => {
-      const [{ data: evts }, { data: rns }] = await Promise.all([
+      const [{ data: evts }, { data: rns }, { data: organizations }] = await Promise.all([
         supabase.from('events').select('id,type,created_at,org_id,meta').order('created_at', { ascending: false }).limit(20),
         supabase.from('workflow_runs').select('id,status,started_at,finished_at,workflow_id').order('started_at', { ascending: false }).limit(20),
+        supabase.from('organizations').select('id,name,created_at,owner_id').order('created_at', { ascending: false }),
       ]);
       setEvents(evts || []);
       setRuns(rns || []);
+      setOrgs(organizations || []);
     };
 
     fetchCounts();
