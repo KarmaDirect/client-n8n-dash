@@ -519,57 +519,7 @@ export type Database = {
       }
     }
     Views: {
-      active_subscribers: {
-        Row: {
-          approval_notes: string | null
-          approved_at: string | null
-          approved_by: string | null
-          created_at: string | null
-          email: string | null
-          id: string | null
-          is_fully_active: boolean | null
-          manually_approved: boolean | null
-          stripe_customer_id: string | null
-          subscribed: boolean | null
-          subscription_end: string | null
-          subscription_tier: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          approval_notes?: string | null
-          approved_at?: string | null
-          approved_by?: string | null
-          created_at?: string | null
-          email?: string | null
-          id?: string | null
-          is_fully_active?: never
-          manually_approved?: boolean | null
-          stripe_customer_id?: string | null
-          subscribed?: boolean | null
-          subscription_end?: string | null
-          subscription_tier?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          approval_notes?: string | null
-          approved_at?: string | null
-          approved_by?: string | null
-          created_at?: string | null
-          email?: string | null
-          id?: string | null
-          is_fully_active?: never
-          manually_approved?: boolean | null
-          stripe_customer_id?: string | null
-          subscribed?: boolean | null
-          subscription_end?: string | null
-          subscription_tier?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       admin_impersonate_user: {
