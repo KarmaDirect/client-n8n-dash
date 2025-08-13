@@ -68,7 +68,7 @@ serve(async (req) => {
       .from("workflows")
       .select("id, org_id, webhook_id, is_active")
       .eq("id", workflowId)
-      .single();
+      .maybeSingle();
 
     if (wfErr || !workflow) {
       log("workflow fetch error", { wfErr });
@@ -98,7 +98,7 @@ serve(async (req) => {
       .from("webhooks")
       .select("id, webhook_url, execution_method")
       .eq("id", workflow.webhook_id)
-      .single();
+      .maybeSingle();
 
     if (whErr || !webhook) {
       log("webhook fetch error", { whErr });

@@ -171,6 +171,19 @@ const WebhookManager = () => {
     }
   };
 
+  const testAgent = async (workflowId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('execute-webhook', {
+        body: { workflow_id: workflowId }
+      });
+      if (error) throw new Error(error.message);
+      if (data?.ok) toast.success('Test OK — exécution réussie');
+      else toast.error(data?.error || 'Test échoué');
+    } catch (e: any) {
+      toast.error('Test échoué: ' + e.message);
+    }
+  };
+
   const openEditModal = (workflow: WorkflowItem) => {
     const webhook = webhooks.find(w => w.id === workflow.webhook_id);
     if (webhook) {
@@ -739,6 +752,15 @@ Ex: https://n8n.mondomaine.com/webhook/12345-67890-abcde..."
                           </div>
                         </div>
                         <div className="flex gap-1 ml-3">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => testAgent(workflow.id)}
+                            className="h-8 px-2"
+                            title="Tester le webhook"
+                          >
+                            <Play className="h-3 w-3 mr-1" /> Tester
+                          </Button>
                           <Button
                             size="sm"
                             variant="outline"

@@ -317,6 +317,11 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
                             </div>
                           )}
                         </div>
+                        {webhook?.webhook_type === 'schedule' && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Planification N8N: {((webhook as any)?.schedule_config?.description) || ((webhook as any)?.schedule_config?.cron) || 'voir N8N'}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         {webhook?.webhook_type === 'button' && (
