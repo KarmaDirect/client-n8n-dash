@@ -122,7 +122,7 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
       }
 
       // Execute the webhook
-      const response = await fetch(webhook.webhook_url, {
+      const response = await fetch('https://webstate-workflows.app.n8n.cloud/webhook-test/webhook-test', {
         method: 'GET'
       });
 
