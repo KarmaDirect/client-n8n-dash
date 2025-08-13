@@ -30,9 +30,12 @@ export const SiteSection = ({ orgId }: { orgId?: string }) => {
   };
 
   return (
-    <Card>
+    <Card className="dashboard-card">
       <CardHeader>
-        <CardTitle>Mon Site 🌐</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500"></div>
+          Mon Site 🌐
+        </CardTitle>
         <CardDescription>Statut, aperçu, pages et demandes de modification</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

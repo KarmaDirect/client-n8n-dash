@@ -166,14 +166,16 @@ const Dashboard = () => {
         </div>
       )}
 
-      <nav className="mb-8 flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Vue d'ensemble</Button>
-        <Button variant="outline" size="sm" onClick={() => document.getElementById('workflows')?.scrollIntoView({ behavior: 'smooth' })}>Automations</Button>
-        {!impersonationMode && (
-          <Button variant="outline" size="sm" onClick={() => document.getElementById('subscription')?.scrollIntoView({ behavior: 'smooth' })}>Abonnement</Button>
-        )}
-        <Button variant="outline" size="sm" onClick={() => document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' })}>Support</Button>
-        <Button variant="outline" size="sm" onClick={() => document.getElementById('profile')?.scrollIntoView({ behavior: 'smooth' })}>Profil</Button>
+      <nav className="dashboard-nav mb-8 p-3 rounded-2xl">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="ghost" size="sm" className="hover:bg-primary/10" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Vue d'ensemble</Button>
+          <Button variant="ghost" size="sm" className="hover:bg-primary/10" onClick={() => document.getElementById('workflows')?.scrollIntoView({ behavior: 'smooth' })}>Automations</Button>
+          {!impersonationMode && (
+            <Button variant="ghost" size="sm" className="hover:bg-primary/10" onClick={() => document.getElementById('subscription')?.scrollIntoView({ behavior: 'smooth' })}>Abonnement</Button>
+          )}
+          <Button variant="ghost" size="sm" className="hover:bg-primary/10" onClick={() => document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' })}>Support</Button>
+          <Button variant="ghost" size="sm" className="hover:bg-primary/10" onClick={() => document.getElementById('profile')?.scrollIntoView({ behavior: 'smooth' })}>Profil</Button>
+        </div>
       </nav>
 
       {!impersonationMode && (
@@ -186,23 +188,39 @@ const Dashboard = () => {
       )}
 
       <section id="overview" className="mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Votre système Webstate travaille pour vous ✨</CardTitle>
-            <CardDescription>Aperçu motivant des gains et résultats (exemple)</CardDescription>
+        <Card className="dashboard-card">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Votre système Webstate travaille pour vous ✨
+            </CardTitle>
+            <CardDescription className="text-muted-foreground/80">
+              Aperçu en temps réel de vos performances
+            </CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm text-muted-foreground">ROI estimé</div>
-              <div className="text-2xl font-semibold">+312%</div>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="metric-card p-6 rounded-xl">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-emerald-500"></div>
+                <div className="text-sm font-medium text-muted-foreground">ROI estimé</div>
+              </div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">+312%</div>
+              <div className="text-xs text-green-500 mt-1">↗ +23% ce mois</div>
             </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Temps gagné</div>
-              <div className="text-2xl font-semibold">12h / semaine</div>
+            <div className="metric-card p-6 rounded-xl">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500"></div>
+                <div className="text-sm font-medium text-muted-foreground">Temps gagné</div>
+              </div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent">12h</div>
+              <div className="text-xs text-blue-500 mt-1">par semaine</div>
             </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Leads générés</div>
-              <div className="text-2xl font-semibold">48 / mois</div>
+            <div className="metric-card p-6 rounded-xl">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-400 to-pink-500"></div>
+                <div className="text-sm font-medium text-muted-foreground">Leads générés</div>
+              </div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">48</div>
+              <div className="text-xs text-purple-500 mt-1">ce mois-ci</div>
             </div>
           </CardContent>
         </Card>

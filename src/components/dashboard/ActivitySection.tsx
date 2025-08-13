@@ -16,9 +16,12 @@ type Run = { id: string; status: string; started_at: string };
 export const ActivitySection = ({ runs }: { runs: Run[] }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <Card className="lg:col-span-2">
+      <Card className="dashboard-card lg:col-span-2">
         <CardHeader>
-          <CardTitle>Activité & Performances 📈</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-500"></div>
+            Activité & Performances 📈
+          </CardTitle>
           <CardDescription>Leads générés et taux de complétion (exemple)</CardDescription>
         </CardHeader>
         <CardContent className="h-64">
@@ -35,9 +38,12 @@ export const ActivitySection = ({ runs }: { runs: Run[] }) => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="dashboard-card">
         <CardHeader>
-          <CardTitle>Timeline</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-orange-400 to-red-500"></div>
+            Timeline
+          </CardTitle>
           <CardDescription>Dernières exécutions</CardDescription>
         </CardHeader>
         <CardContent>

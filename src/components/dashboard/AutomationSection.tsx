@@ -19,9 +19,12 @@ export const AutomationSection = ({
   const activeCount = useMemo(() => workflows.filter((w) => w.is_active).length, [workflows]);
 
   return (
-    <Card>
+    <Card className="dashboard-card">
       <CardHeader>
-        <CardTitle>Automatisations IA 🤖</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-400 to-pink-500"></div>
+          Automatisations IA 🤖
+        </CardTitle>
         <CardDescription>
           {activeCount} workflow(s) actif(s). Déclenchez un workflow et injectez des infos si besoin.
         </CardDescription>
