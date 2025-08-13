@@ -19,7 +19,17 @@ import { Badge } from "@/components/ui/badge";
 interface EventItem { id: string; type: string; created_at: string; org_id: string; meta: any }
 interface RunItem { id: string; status: string; started_at: string; finished_at: string | null; workflow_id: string }
 interface OrgItem { id: string; name: string; created_at: string; owner_id: string }
-interface SubscriberItem { email: string; subscribed: boolean; subscription_tier: string | null; subscription_end: string | null; updated_at: string }
+interface SubscriberItem { 
+  email: string; 
+  subscribed: boolean; 
+  subscription_tier: string | null; 
+  subscription_end: string | null; 
+  updated_at: string;
+  manually_approved: boolean;
+  approved_by: string | null;
+  approved_at: string | null;
+  approval_notes: string | null;
+}
 const Admin = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -34,6 +44,7 @@ const Admin = () => {
   const [impersonating, setImpersonating] = useState(false);
   const [subscribers, setSubscribers] = useState<SubscriberItem[]>([]);
   const [subsSearch, setSubsSearch] = useState("");
+  const [approvingSubEmail, setApprovingSubEmail] = useState<string | null>(null);
   const filteredOrgs = useMemo(() => {
     const q = orgSearch.trim().toLowerCase();
     if (!q) return orgs;
@@ -100,7 +111,7 @@ const Admin = () => {
     if (!isAdmin) return;
     supabase
       .from('subscribers')
-      .select('email,subscribed,subscription_tier,subscription_end,updated_at')
+      .select('email,subscribed,subscription_tier,subscription_end,updated_at,manually_approved,approved_by,approved_at,approval_notes')
       .order('updated_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) console.error(error);
@@ -148,6 +159,36 @@ const Admin = () => {
       toast.error('Erreur lors de la connexion: ' + error.message);
     } finally {
       setImpersonating(false);
+    }
+  };
+
+  const handleApproveSubscriber = async (email: string, approve: boolean) => {
+    setApprovingSubEmail(email);
+    try {
+      const { error } = await supabase.functions.invoke(approve ? 'approve-subscriber' : 'revoke-subscriber-approval', {
+        body: { 
+          email,
+          approval_notes: approve ? `Approuvé manuellement par admin pour tests le ${new Date().toLocaleDateString()}` : 'Approbation révoquée par admin'
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast.success(approve ? `Compte ${email} débloqué pour les tests` : `Approbation révoquée pour ${email}`);
+      
+      // Refresh subscribers list
+      const { data, error: refreshError } = await supabase
+        .from('subscribers')
+        .select('email,subscribed,subscription_tier,subscription_end,updated_at,manually_approved,approved_by,approved_at,approval_notes')
+        .order('updated_at', { ascending: false });
+      
+      if (!refreshError) {
+        setSubscribers((data as any as SubscriberItem[]) || []);
+      }
+    } catch (error: any) {
+      toast.error('Erreur: ' + error.message);
+    } finally {
+      setApprovingSubEmail(null);
     }
   };
 
@@ -358,8 +399,9 @@ const Admin = () => {
                       <TableHead>Email</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead>Offre</TableHead>
+                      <TableHead>Approbation manuelle</TableHead>
                       <TableHead>Fin</TableHead>
-                      <TableHead>Mis à jour</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -367,18 +409,68 @@ const Admin = () => {
                       <TableRow key={idx}>
                         <TableCell className="font-medium">{s.email}</TableCell>
                         <TableCell>
-                          <Badge variant={s.subscribed ? 'default' : 'secondary'}>
-                            {s.subscribed ? 'Actif' : 'Inactif'}
-                          </Badge>
+                          <div className="flex flex-col gap-1">
+                            <Badge variant={s.subscribed ? 'default' : 'secondary'}>
+                              {s.subscribed ? 'Actif' : 'Inactif'}
+                            </Badge>
+                            {s.manually_approved && (
+                              <Badge variant="outline" className="text-xs">
+                                Approuvé manuellement
+                              </Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>{s.subscription_tier || '—'}</TableCell>
+                        <TableCell>
+                          {s.manually_approved ? (
+                            <div className="text-xs">
+                              <Badge variant="default">Débloqué</Badge>
+                              {s.approved_at && (
+                                <div className="text-muted-foreground mt-1">
+                                  {new Date(s.approved_at).toLocaleDateString()}
+                                </div>
+                              )}
+                              {s.approval_notes && (
+                                <div className="text-muted-foreground text-xs mt-1" title={s.approval_notes}>
+                                  {s.approval_notes.length > 30 ? s.approval_notes.substring(0, 30) + '...' : s.approval_notes}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <Badge variant="secondary">Standard</Badge>
+                          )}
+                        </TableCell>
                         <TableCell>{s.subscription_end ? new Date(s.subscription_end).toLocaleDateString() : '—'}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{new Date(s.updated_at).toLocaleString()}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            {!s.manually_approved ? (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleApproveSubscriber(s.email, true)}
+                                disabled={approvingSubEmail === s.email}
+                                className="h-7 px-2 text-xs"
+                              >
+                                Débloquer pour tests
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleApproveSubscriber(s.email, false)}
+                                disabled={approvingSubEmail === s.email}
+                                className="h-7 px-2 text-xs"
+                              >
+                                Révoquer
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))}
                     {filteredSubs.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center text-sm text-muted-foreground">
+                        <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
                           Aucun abonné trouvé.
                         </TableCell>
                       </TableRow>
