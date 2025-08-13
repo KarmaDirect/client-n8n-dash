@@ -51,6 +51,9 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState<string | null>(null);
 
+  // Abonnement utilisateur
+  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
+
   // Form modal state
   const [showForm, setShowForm] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowItem | null>(null);
@@ -60,6 +63,24 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
   useEffect(() => {
     fetchData();
   }, [orgId]);
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!user) { setIsSubscribed(null); return; }
+      const { data, error } = await supabase
+        .from('subscribers')
+        .select('subscribed')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (error) {
+        console.error('Subscription fetch error', error);
+        setIsSubscribed(null);
+      } else {
+        setIsSubscribed(Boolean(data?.subscribed));
+      }
+    };
+    fetchSubscription();
+  }, [user]);
 
   const fetchData = async () => {
     console.log('WorkflowPanel: fetchData called with orgId:', orgId);
@@ -108,6 +129,11 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
   const executeWorkflow = async (workflowId: string) => {
     if (!user) {
       toast.error('Vous devez être connecté');
+      return;
+    }
+
+    if (isSubscribed === false) {
+      toast.error("Abonnement requis pour exécuter les workflows");
       return;
     }
 
@@ -328,7 +354,7 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
                           <Button
                             size="sm"
                             onClick={() => executeWorkflow(workflow.id)}
-                            disabled={!canExecute || executing === workflow.id}
+                            disabled={!canExecute || executing === workflow.id || isSubscribed === false}
                           >
                             {executing === workflow.id ? (
                               "Exécution..."
@@ -345,7 +371,7 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
                           <Button
                             size="sm"
                             variant="outline"
-                            disabled={!canExecute}
+                            disabled={!canExecute || isSubscribed === false}
                             onClick={() => openForm(workflow)}
                           >
                             📝 Formulaire
