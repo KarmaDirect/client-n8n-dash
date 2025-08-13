@@ -123,17 +123,7 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
 
       // Execute the webhook
       const response = await fetch(webhook.webhook_url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          source: 'webstate_dashboard',
-          user_id: user.id,
-          org_id: orgId,
-          workflow_id: workflowId,
-          timestamp: new Date().toISOString()
-        })
+        method: 'GET'
       });
 
       const responseData = await response.text();
