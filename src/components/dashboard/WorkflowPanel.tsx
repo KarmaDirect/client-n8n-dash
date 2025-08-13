@@ -1,9 +1,15 @@
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Play, Clock, AlertCircle, CheckCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -45,6 +51,12 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState<string | null>(null);
 
+  // Form modal state
+  const [showForm, setShowForm] = useState(false);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowItem | null>(null);
+  const [selectedWebhook, setSelectedWebhook] = useState<WebhookItem | null>(null);
+  const [submittingForm, setSubmittingForm] = useState(false);
+  const form = useForm<Record<string, any>>({ defaultValues: {} });
   useEffect(() => {
     fetchData();
   }, [orgId]);
@@ -151,6 +163,48 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
       // Journalisation gérée côté serveur via l'Edge Function
     } finally {
       setExecuting(null);
+    }
+  };
+
+  const openForm = (workflow: WorkflowItem) => {
+    const wh = webhooks.find(w => w.id === workflow.webhook_id) || null;
+    setSelectedWorkflow(workflow);
+    setSelectedWebhook(wh);
+
+    const defaults: Record<string, any> = {};
+    const fields = (wh?.form_fields as any[]) || [];
+    fields.forEach((f: any, idx: number) => {
+      const key = f?.name || `field_${idx}`;
+      defaults[key] = f?.default ?? (f?.type === 'checkbox' ? false : '');
+    });
+    form.reset(defaults);
+    setShowForm(true);
+  };
+
+  const submitForm = async (values: Record<string, any>) => {
+    if (!selectedWorkflow) return;
+    setSubmittingForm(true);
+    try {
+      const { data: execData, error: execError } = await supabase.functions.invoke('execute-webhook', {
+        body: {
+          workflow_id: selectedWorkflow.id,
+          payload: values,
+        },
+      });
+      if (execError) throw new Error(execError.message);
+      if (execData?.ok) {
+        toast.success('Formulaire envoyé, exécution en cours');
+        setShowForm(false);
+        setSelectedWorkflow(null);
+        setSelectedWebhook(null);
+        await fetchData();
+      } else {
+        toast.error(execData?.error || "Erreur lors de l'exécution");
+      }
+    } catch (e: any) {
+      toast.error('Erreur: ' + e.message);
+    } finally {
+      setSubmittingForm(false);
     }
   };
 
@@ -287,6 +341,7 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
                             size="sm"
                             variant="outline"
                             disabled={!canExecute}
+                            onClick={() => openForm(workflow)}
                           >
                             📝 Formulaire
                           </Button>
@@ -358,6 +413,60 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
           </CardContent>
         </Card>
       )}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedWorkflow?.name || 'Formulaire'}</DialogTitle>
+            <DialogDescription>
+              Renseignez les informations requises puis validez pour lancer l'exécution.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedWebhook?.form_fields && (selectedWebhook.form_fields as any[])?.length ? (
+            <form onSubmit={form.handleSubmit(submitForm)} className="space-y-4">
+              {(selectedWebhook.form_fields as any[]).map((f: any, idx: number) => (
+                <div key={f?.name || idx} className="space-y-2">
+                  <Label htmlFor={f?.name}>{f?.label || f?.name || `Champ ${idx+1}`}</Label>
+                  {f?.type === 'textarea' ? (
+                    <Textarea id={f?.name} placeholder={f?.placeholder}
+                      {...form.register(f?.name || `field_${idx}`, { required: !!f?.required })} />
+                  ) : f?.type === 'select' ? (
+                    <Select defaultValue={form.getValues(f?.name || `field_${idx}`)}
+                      onValueChange={(val) => form.setValue(f?.name || `field_${idx}`, val)}>
+                      <SelectTrigger id={f?.name}>
+                        <SelectValue placeholder={f?.placeholder || 'Sélectionnez'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(f?.options || []).map((opt: any, i: number) => {
+                          const value = String(opt?.value ?? opt);
+                          const label = String(opt?.label ?? opt);
+                          return <SelectItem key={i} value={value}>{label}</SelectItem>;
+                        })}
+                      </SelectContent>
+                    </Select>
+                  ) : f?.type === 'number' ? (
+                    <Input id={f?.name} type="number" placeholder={f?.placeholder}
+                      {...form.register(f?.name || `field_${idx}`, { required: !!f?.required, valueAsNumber: true })} />
+                  ) : f?.type === 'checkbox' ? (
+                    <input id={f?.name} type="checkbox" className="h-4 w-4"
+                      {...form.register(f?.name || `field_${idx}`)} />
+                  ) : (
+                    <Input id={f?.name} type={f?.type || 'text'} placeholder={f?.placeholder}
+                      {...form.register(f?.name || `field_${idx}`, { required: !!f?.required })} />
+                  )}
+                </div>
+              ))}
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Annuler</Button>
+                <Button type="submit" disabled={submittingForm}>{submittingForm ? 'Envoi...' : 'Envoyer'}</Button>
+              </div>
+            </form>
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              Aucun champ configuré pour ce formulaire.
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
