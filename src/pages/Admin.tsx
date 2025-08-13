@@ -14,10 +14,12 @@ import WebhookManager from "@/components/admin/WebhookManager";
 import { UserCheck, Webhook } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 interface EventItem { id: string; type: string; created_at: string; org_id: string; meta: any }
 interface RunItem { id: string; status: string; started_at: string; finished_at: string | null; workflow_id: string }
 interface OrgItem { id: string; name: string; created_at: string; owner_id: string }
+interface SubscriberItem { email: string; subscribed: boolean; subscription_tier: string | null; subscription_end: string | null; updated_at: string }
 const Admin = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -30,11 +32,18 @@ const Admin = () => {
   const [orgSearch, setOrgSearch] = useState("");
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
   const [impersonating, setImpersonating] = useState(false);
+  const [subscribers, setSubscribers] = useState<SubscriberItem[]>([]);
+  const [subsSearch, setSubsSearch] = useState("");
   const filteredOrgs = useMemo(() => {
     const q = orgSearch.trim().toLowerCase();
     if (!q) return orgs;
     return orgs.filter(o => o.name.toLowerCase().includes(q));
   }, [orgs, orgSearch]);
+  const filteredSubs = useMemo(() => {
+    const q = subsSearch.trim().toLowerCase();
+    if (!q) return subscribers;
+    return subscribers.filter(s => (s.email || '').toLowerCase().includes(q));
+  }, [subsSearch, subscribers]);
 
   useEffect(() => {
     document.title = "Admin Webstate — Vue d'ensemble";
@@ -90,10 +99,12 @@ const Admin = () => {
   useEffect(() => {
     if (!isAdmin) return;
     supabase
-      .rpc('admin_list_organizations')
+      .from('subscribers')
+      .select('email,subscribed,subscription_tier,subscription_end,updated_at')
+      .order('updated_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) console.error(error);
-        setOrgs((data as any as OrgItem[]) || []);
+        setSubscribers((data as any as SubscriberItem[]) || []);
       });
   }, [isAdmin]);
 
@@ -151,8 +162,9 @@ const Admin = () => {
       {header}
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="subscriptions">Abonnements</TabsTrigger>
           <TabsTrigger value="workflows">
             <Webhook className="h-4 w-4 mr-2" />
             Gestion N8N
@@ -321,6 +333,61 @@ const Admin = () => {
         <p className="text-sm text-muted-foreground">Vue de base pour le MVP. On pourra brancher des logs avancés (Edge Functions/Stripe/N8N) ensuite.</p>
       </section>
 
+        </TabsContent>
+        
+        <TabsContent value="subscriptions" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Abonnés</CardTitle>
+              <CardDescription>Table des abonnements (lecture seule)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between mb-4">
+                <Input
+                  placeholder="Rechercher un email..."
+                  value={subsSearch}
+                  onChange={(e) => setSubsSearch(e.target.value)}
+                  className="max-w-sm"
+                />
+                <div className="text-sm text-muted-foreground">{filteredSubs.length} abonnés</div>
+              </div>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Offre</TableHead>
+                      <TableHead>Fin</TableHead>
+                      <TableHead>Mis à jour</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSubs.map((s, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">{s.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={s.subscribed ? 'default' : 'secondary'}>
+                            {s.subscribed ? 'Actif' : 'Inactif'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{s.subscription_tier || '—'}</TableCell>
+                        <TableCell>{s.subscription_end ? new Date(s.subscription_end).toLocaleDateString() : '—'}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{new Date(s.updated_at).toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                    {filteredSubs.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-sm text-muted-foreground">
+                          Aucun abonné trouvé.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="workflows">

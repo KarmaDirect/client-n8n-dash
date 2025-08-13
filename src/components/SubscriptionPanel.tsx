@@ -1,12 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
 export const SubscriptionPanel = () => {
   const [loading, setLoading] = useState<string | null>(null);
   const [status, setStatus] = useState<{ subscribed?: boolean; subscription_tier?: string | null; subscription_end?: string | null } | null>(null);
+
+  useEffect(() => { refresh(); }, []);
 
   const checkout = async (plan: "starter" | "pro", interval: "month" | "year") => {
     setLoading(`${plan}-${interval}`);
@@ -34,8 +38,6 @@ export const SubscriptionPanel = () => {
       return;
     }
     setStatus(data || {});
-    const msg = data?.subscribed ? `Actif — ${data.subscription_tier || ""}` : "Aucun abonnement actif";
-    toast.success(`Statut: ${msg}`);
   };
 
   const portal = async () => {
@@ -51,33 +53,78 @@ export const SubscriptionPanel = () => {
     }
   };
 
+  const isActive = !!status?.subscribed;
+  const tier = status?.subscription_tier || "Aucun";
+  const renew = status?.subscription_end ? new Date(status.subscription_end).toLocaleDateString() : null;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Abonnements</CardTitle>
-        <CardDescription>
-          Starter 97€/mois ou 930€/an • Pro 297€/mois ou 2 850€/an • 30 jours satisfait ou remboursé • Engagement 12 mois
-        </CardDescription>
+        <CardTitle>Formules & Abonnement</CardTitle>
+        <CardDescription>Gérez votre abonnement et accédez au portail Stripe</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Button variant="outline" disabled={loading === "starter-month"} onClick={() => checkout("starter", "month")}>Starter Mensuel — 97€</Button>
-          <Button variant="outline" disabled={loading === "starter-year"} onClick={() => checkout("starter", "year")}>Starter Annuel — 930€</Button>
-          <Button variant="outline" disabled={loading === "pro-month"} onClick={() => checkout("pro", "month")}>Pro Mensuel — 297€</Button>
-          <Button variant="outline" disabled={loading === "pro-year"} onClick={() => checkout("pro", "year")}>Pro Annuel — 2 850€</Button>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Button onClick={refresh} disabled={loading === "refresh"}>Rafraîchir le statut</Button>
-          <Button variant="secondary" onClick={portal} disabled={loading === "portal"}>Gérer mon abonnement</Button>
-        </div>
-        {status && (
-          <div className="text-sm text-muted-foreground">
-            Statut: {status.subscribed ? `Actif — ${status.subscription_tier}` : "Aucun"}
-            {status.subscription_end && (
-              <span> • Renouvellement: {new Date(status.subscription_end).toLocaleDateString()}</span>
+      <CardContent className="space-y-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-md border p-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm">Statut:</span>
+              <Badge variant={isActive ? "default" : "secondary"}>{isActive ? `Actif — ${tier}` : "Inactif"}</Badge>
+            </div>
+            {renew && (
+              <div className="text-xs text-muted-foreground mt-1">Renouvellement: {renew}</div>
             )}
           </div>
-        )}
+          <div className="flex gap-2">
+            <Button onClick={refresh} disabled={loading === "refresh"}>Rafraîchir</Button>
+            <Button variant="secondary" onClick={portal} disabled={loading === "portal"}>Gérer (Portail)</Button>
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="h-full">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Starter</CardTitle>
+                <Badge variant="outline">97€ / mois</Badge>
+              </div>
+              <CardDescription>Idéal pour démarrer avec les automations</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
+                <li>Jusqu'à 3 agents N8N</li>
+                <li>Support standard</li>
+                <li>Historique 30 jours</li>
+              </ul>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button variant="outline" disabled={loading === "starter-month"} onClick={() => checkout("starter", "month")}>Mensuel — 97€</Button>
+                <Button variant="outline" disabled={loading === "starter-year"} onClick={() => checkout("starter", "year")}>Annuel — 930€</Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="h-full">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Pro</CardTitle>
+                <Badge variant="outline">297€ / mois</Badge>
+              </div>
+              <CardDescription>Pour les équipes et besoins avancés</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
+                <li>Agents N8N illimités</li>
+                <li>Support prioritaire</li>
+                <li>Historique 90 jours</li>
+              </ul>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button variant="outline" disabled={loading === "pro-month"} onClick={() => checkout("pro", "month")}>Mensuel — 297€</Button>
+                <Button variant="outline" disabled={loading === "pro-year"} onClick={() => checkout("pro", "year")}>Annuel — 2 850€</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </CardContent>
     </Card>
   );
