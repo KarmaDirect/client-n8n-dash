@@ -14,32 +14,32 @@ export function Footer({ className }: FooterProps) {
 
   const footerLinks = {
     produit: [
-      { label: "Fonctionnalités", href: "#features" },
-      { label: "Cas d'Usage", href: "#use-cases" },
-      { label: "Tarifs", href: "#pricing" },
-      { label: "API", href: "#" },
-      { label: "Intégrations", href: "#" }
+      { label: "Fonctionnalités", href: "/features" },
+      { label: "Cas d'Usage", href: "/use-cases" },
+      { label: "Tarifs", href: "/pricing" },
+      { label: "API", href: "/api" },
+      { label: "Intégrations", href: "/integrations" }
     ],
     entreprise: [
-      { label: "À propos", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Carrières", href: "#" },
-      { label: "Presse", href: "#" },
-      { label: "Partenaires", href: "#" }
+      { label: "À propos", href: "/about" },
+      { label: "Blog", href: "/blog" },
+      { label: "Carrières", href: "/careers" },
+      { label: "Presse", href: "/blog" },
+      { label: "Partenaires", href: "/contact" }
     ],
     support: [
-      { label: "Centre d'aide", href: "#" },
-      { label: "Documentation", href: "#" },
-      { label: "Formation", href: "#" },
-      { label: "Contact", href: "#" },
-      { label: "Statut", href: "#" }
+      { label: "Centre d'aide", href: "/contact" },
+      { label: "Documentation", href: "/api" },
+      { label: "Formation", href: "/contact" },
+      { label: "Contact", href: "/contact" },
+      { label: "Statut", href: "/contact" }
     ],
     légal: [
-      { label: "Mentions légales", href: "#" },
-      { label: "Confidentialité", href: "#" },
-      { label: "CGU", href: "#" },
-      { label: "RGPD", href: "#" },
-      { label: "Cookies", href: "#" }
+      { label: "Mentions légales", href: "/terms" },
+      { label: "Confidentialité", href: "/privacy" },
+      { label: "CGU", href: "/terms" },
+      { label: "RGPD", href: "/privacy" },
+      { label: "Cookies", href: "/privacy" }
     ]
   };
 
@@ -130,12 +130,12 @@ export function Footer({ className }: FooterProps) {
                 <ul className="space-y-3">
                   {links.map((link) => (
                     <li key={link.label}>
-                      <a
-                        href={link.href}
+                      <Link
+                        to={link.href}
                         className="text-slate-300 hover:text-white transition-colors text-sm"
                       >
                         {link.label}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
