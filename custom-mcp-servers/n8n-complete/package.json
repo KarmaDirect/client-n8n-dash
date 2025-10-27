@@ -1,0 +1,28 @@
+{
+  "name": "n8n-mcp-complete",
+  "version": "3.0.0",
+  "description": "Serveur MCP n8n ultra-complet avec 40+ commandes - Toutes les API n8n",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "n8n-mcp-complete": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "n8n",
+    "mcp",
+    "model-context-protocol",
+    "automation",
+    "cursor",
+    "ai"
+  ],
+  "author": "Yasmine Moro",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.2",
+    "axios": "^1.7.9"
+  }
+}
+

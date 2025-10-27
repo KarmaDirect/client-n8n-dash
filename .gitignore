@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# MCP Configuration (contains sensitive API keys)
+# DO NOT COMMIT ~/.cursor/mcp.json
+# Note: This file is outside the project directory anyway

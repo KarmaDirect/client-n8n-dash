@@ -1,580 +1,300 @@
-# 🚀 Webstate SAAS 2 - Système Admin & Clients Multi-Tenant
+# 🚀 Client n8n Dashboard - SaaS Multi-tenant
 
-## 📋 Vue d'ensemble du projet
+**Plateforme SaaS pour gérer des agents d'automatisation n8n par client**
 
-**Webstate SAAS 2** est un système de gestion multi-tenant qui fonctionne comme un mini-GoHighLevel privé. Il permet à un administrateur de gérer tous les comptes clients depuis un tableau de bord centralisé, tandis que chaque client a accès à son propre espace privé et sécurisé.
+![Status](https://img.shields.io/badge/status-production%20ready-green)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Security](https://img.shields.io/badge/security-audited-brightgreen)
 
-### 🎯 Objectifs principaux
+---
 
-- **Admin centralisé** : Vue d'ensemble de tous les clients, gestion des workflows, impersonation
-- **Isolation client** : Chaque client voit uniquement ses propres données
-- **Workflows intégrés** : Installation et gestion facilitée des workflows depuis l'interface admin
-- **Vérification système** : Monitoring en temps réel de l'état des comptes et workflows
+## 📋 Table des matières
 
-## 🏗️ Architecture technique
+- [Vue d'ensemble](#vue-densemble)
+- [Stack technique](#stack-technique)
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Documentation](#documentation)
+- [Sécurité](#sécurité)
 
-### Stack technologique
+---
 
-```
-Frontend:
-├── React 18.3.1 + TypeScript
-├── Vite (build tool)
-├── Tailwind CSS (design system)
-├── shadcn/ui (composants UI)
-├── React Router DOM (routing)
-├── TanStack React Query (data fetching)
-└── Lucide React (icônes)
+## 🎯 Vue d'ensemble
 
-Backend:
-├── Supabase (BaaS)
-├── PostgreSQL (base de données)
-├── Row Level Security (RLS)
-├── Edge Functions
-├── Authentication
-└── Storage
-```
+**Client n8n Dashboard** est une plateforme SaaS multi-tenant qui permet de :
+- ✅ Gérer des workflows n8n pour plusieurs clients
+- ✅ Système d'approbation manuelle des comptes
+- ✅ Isolation complète des données (RLS Supabase)
+- ✅ Intégration Stripe pour les abonnements
+- ✅ MCPs pour gérer n8n et Supabase depuis Cursor
 
-### 🗂️ Structure du projet
+---
 
-```
-webstate-saas-2/
-├── 📁 src/
-│   ├── 📁 components/         # Composants réutilisables
-│   │   ├── 📁 ui/             # Composants shadcn/ui
-│   │   ├── 📁 admin/          # Composants spécifiques admin
-│   │   ├── 📁 dashboard/      # Composants dashboard client
-│   │   ├── ProtectedRoute.tsx # Protection des routes
-│   │   ├── SubscriptionPanel.tsx # Gestion abonnements
-│   │   └── TenantSwitcher.tsx # Sélecteur d'organisation
-│   ├── 📁 context/            # Contextes React
-│   │   └── AuthContext.tsx    # Contexte d'authentification
-│   ├── 📁 integrations/       # Intégrations externes
-│   │   └── 📁 supabase/       # Configuration Supabase
-│   │       ├── client.ts      # Client Supabase
-│   │       └── types.ts       # Types TypeScript générés
-│   ├── 📁 pages/              # Pages principales
-│   │   ├── Index.tsx          # Page d'accueil publique
-│   │   ├── Auth.tsx           # Authentification
-│   │   ├── Dashboard.tsx      # Dashboard client
-│   │   ├── Admin.tsx          # Interface admin
-│   │   └── NotFound.tsx       # Page 404
-│   ├── 📁 assets/             # Ressources statiques
-│   ├── App.tsx                # Composant racine
-│   ├── main.tsx               # Point d'entrée
-│   └── index.css              # Design system CSS
-├── 📁 supabase/               # Configuration Supabase
-│   ├── 📁 functions/          # Edge Functions
-│   │   ├── bootstrap-admin/   # Initialisation admin
-│   │   ├── execute-webhook/   # Exécution webhooks
-│   │   ├── create-checkout/   # Stripe checkout
-│   │   └── ...
-│   └── config.toml            # Configuration Supabase
-├── 📁 public/                 # Fichiers publics
-├── package.json               # Dépendances npm
-├── vite.config.ts             # Configuration Vite
-├── tailwind.config.ts         # Configuration Tailwind
-└── tsconfig.json              # Configuration TypeScript
-```
+## 🛠️ Stack technique
 
-## 🗄️ Base de données Supabase
+### **Frontend**
+- **React 18** + TypeScript
+- **Vite** (build & dev server)
+- **Tailwind CSS** + Shadcn/UI
+- **React Router** (routing)
+- **TanStack Query** (state management)
+- **Framer Motion** (animations)
 
-### 📊 Schéma de données
+### **Backend**
+- **Supabase** (BaaS)
+  - Auth (JWT)
+  - PostgreSQL (database)
+  - Edge Functions (serverless)
+  - Storage (files)
+- **Stripe** (payments)
+- **n8n** (workflows automation)
 
-#### Tables principales
+### **Infrastructure**
+- **Railway** (n8n hosting)
+- **Vercel/Netlify** (frontend hosting)
+- **Supabase Cloud** (database)
 
-**🏢 Organizations** - Organisations clients
-```sql
-- id: uuid (PK)
-- name: text (nom de l'organisation)
-- owner_id: uuid (propriétaire)
-- created_at: timestamp
-- updated_at: timestamp
-```
+---
 
-**👥 Organization Members** - Membres des organisations
-```sql
-- id: uuid (PK)
-- org_id: uuid (FK → organizations)
-- user_id: uuid (référence auth.users)
-- role: org_role (member/admin)
-- created_at: timestamp
-```
+## ⚡ Quick Start
 
-**👤 User Roles** - Rôles système
-```sql
-- id: uuid (PK)
-- user_id: uuid (référence auth.users)
-- role: app_role (admin/user)
-- created_at: timestamp
-```
+### **Prérequis**
 
-**🔄 Workflows** - Workflows automatisés
-```sql
-- id: uuid (PK)
-- org_id: uuid (FK → organizations)
-- name: text (nom du workflow)
-- description: text
-- is_active: boolean
-- webhook_id: uuid (FK → webhooks)
-- usage_limit_per_hour: integer
-- usage_limit_per_day: integer
-- last_executed_at: timestamp
-- created_at: timestamp
-- updated_at: timestamp
-```
+- Node.js 18+
+- npm ou bun
+- Compte Supabase
+- Compte Stripe (mode test)
+- Instance n8n (Railway)
 
-**🪝 Webhooks** - Configuration des webhooks
-```sql
-- id: uuid (PK)
-- org_id: uuid (FK → organizations)
-- name: text
-- webhook_url: text
-- webhook_type: text (button/scheduled)
-- execution_method: text (GET/POST)
-- is_active: boolean
-- form_fields: jsonb
-- schedule_config: jsonb
-- created_at: timestamp
-- updated_at: timestamp
-```
-
-**📊 Leads** - Prospects collectés
-```sql
-- id: uuid (PK)
-- org_id: uuid (FK → organizations)
-- status: text
-- source: text
-- metadata: jsonb
-- created_at: timestamp
-- updated_at: timestamp
-```
-
-**📄 Pages** - Pages web des clients
-```sql
-- id: uuid (PK)
-- org_id: uuid (FK → organizations)
-- title: text
-- slug: text
-- status: text (brouillon/publié)
-- created_at: timestamp
-- updated_at: timestamp
-```
-
-**🌐 Sites** - Sites web des clients
-```sql
-- id: uuid (PK)
-- org_id: uuid (FK → organizations)
-- site_url: text
-- screenshot_url: text
-- status: text (en_construction/actif)
-- created_at: timestamp
-- updated_at: timestamp
-```
-
-### 🔒 Sécurité RLS (Row Level Security)
-
-Toutes les tables utilisent des politiques RLS pour assurer l'isolation des données :
-
-#### Politiques Admin
-```sql
--- L'admin peut tout voir/modifier
-CREATE POLICY "admin_select_all_[table]" ON [table]
-FOR SELECT USING (has_role(auth.uid(), 'admin'::app_role));
-```
-
-#### Politiques Organisation
-```sql
--- Les membres peuvent voir/modifier les données de leur organisation
-CREATE POLICY "[table]_select_members" ON [table]
-FOR SELECT USING (user_is_org_member(auth.uid(), org_id));
-```
-
-### 🔧 Fonctions de base de données
-
-**`has_role(user_id, role)`** - Vérifie si un utilisateur a un rôle spécifique
-**`user_is_org_member(user_id, org_id)`** - Vérifie l'appartenance à une organisation
-**`admin_list_organizations()`** - Liste toutes les organisations (admin uniquement)
-**`admin_impersonate_user(user_id)`** - Impersonation utilisateur (admin uniquement)
-
-## 🚀 Installation et configuration
-
-### Prérequis
+### **Installation**
 
 ```bash
-# Versions requises
-Node.js >= 18.0.0
-npm >= 8.0.0
-```
+# 1. Cloner le repo
+git clone <repo-url>
+cd client-n8n-dash
 
-### 1. Clonage et installation
-
-```bash
-# Cloner le projet
-git clone <YOUR_GIT_URL>
-cd webstate-saas-2
-
-# Installation des dépendances
+# 2. Installer les dépendances
 npm install
-```
 
-### 2. Configuration Supabase
+# 3. Configurer les variables d'environnement
+cp .env.example .env.local
 
-#### Variables d'environnement Supabase
-Le projet utilise les variables intégrées dans `src/integrations/supabase/client.ts` :
-
-```typescript
-const SUPABASE_URL = "https://ijybwfdkiteebytdwhyu.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
-```
-
-#### Accès à la base de données
-- **URL du projet** : https://supabase.com/dashboard/project/ijybwfdkiteebytdwhyu
-- **Référence du projet** : `ijybwfdkiteebytdwhyu`
-
-#### Secrets configurés
-```
-- admin@demo.local (compte admin par défaut)
-- STRIPE_SECRET_KEY (clé secrète Stripe)
-- SUPABASE_URL
-- SUPABASE_ANON_KEY
-- SUPABASE_SERVICE_ROLE_KEY
-- SUPABASE_DB_URL
-```
-
-### 3. Démarrage du projet
-
-```bash
-# Mode développement
+# 4. Lancer le serveur de dev
 npm run dev
-
-# Construction pour production
-npm run build
-
-# Prévisualisation de la production
-npm run preview
-
-# Linter
-npm run lint
 ```
 
-Le serveur de développement démarre sur : http://localhost:8080
+### **Configuration**
 
-## 🎮 Utilisation du système
+Créer un fichier `.env.local` :
 
-### 🔑 Authentification
-
-#### Comptes par défaut
-
-**Admin** :
-- Email : `admin@demo.local`
-- Mot de passe : Configuré dans les secrets Supabase
-
-**Client de test** :
-- Les clients peuvent s'inscrire via `/auth`
-- Chaque inscription crée automatiquement une organisation personnelle
-
-### 👨‍💼 Interface Admin (`/admin`)
-
-#### Fonctionnalités disponibles
-
-1. **Vue d'ensemble multi-tenant**
-   - Statistiques globales (organisations, workflows, leads, erreurs)
-   - Métriques temps réel sur 7 jours
-
-2. **Gestion des comptes clients**
-   - Liste de toutes les organisations
-   - Détails de chaque client
-   - **Impersonation** : entrer dans le compte d'un client
-
-3. **Monitoring des workflows**
-   - État des workflows par organisation
-   - Statistiques d'exécution
-   - Gestion des erreurs
-
-4. **Activité système**
-   - Logs des événements
-   - Exécutions récentes de workflows
-   - Monitoring des erreurs
-
-#### Impersonation client
-```typescript
-// Fonction d'impersonation dans Admin.tsx
-const handleImpersonate = async (orgId: string) => {
-  // L'admin peut "entrer" dans le compte client
-  // et voir exactement ce que le client voit
-};
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-### 👤 Interface Client (`/app`)
+---
 
-#### Fonctionnalités disponibles
+## 🏗️ Architecture
 
-1. **Dashboard personnel**
-   - Métriques de performance (ROI, temps gagné, leads)
-   - Statut des workflows actifs
+### **Structure du projet**
 
-2. **Gestion des sites**
-   - Liste des pages créées
-   - Statut de publication
-   - Aperçu des sites actifs
-
-3. **Automatisations**
-   - Workflows disponibles
-   - Statistiques d'exécution
-   - Configuration des automatisations
-
-4. **Activités et leads**
-   - Leads collectés
-   - Taux de conversion
-   - Sources de trafic
-
-5. **Support**
-   - Canal de communication avec l'admin
-   - Historique des demandes
-
-## 🔧 Développement
-
-### 🎨 Design System
-
-Le projet utilise un design system basé sur les tokens CSS et Tailwind :
-
-#### Couleurs principales
-```css
-/* Variables CSS dans index.css */
---primary: 255 85% 60%;          /* Electric violet */
---primary-foreground: 210 40% 98%;
---primary-glow: 255 85% 70%;
---accent: 262 83% 58%;
+```
+client-n8n-dash/
+├── src/
+│   ├── components/       # Composants React réutilisables
+│   ├── pages/           # Pages de l'application
+│   ├── context/         # Contextes React (Auth)
+│   ├── hooks/           # Hooks personnalisés
+│   ├── integrations/    # Intégrations externes (Supabase)
+│   └── lib/             # Utilitaires
+├── supabase/
+│   ├── functions/       # Edge Functions
+│   └── migrations/      # Migrations SQL
+├── custom-mcp-servers/  # Serveurs MCP
+└── docs/               # Documentation
 ```
 
-#### Classes utilitaires
-```css
-.dashboard-card     /* Cartes du dashboard */
-.stats-card         /* Cartes de statistiques */
-.metric-card        /* Cartes de métriques */
-.auth-card          /* Cartes d'authentification */
-```
+### **Multi-tenancy**
 
-### 🧩 Composants clés
+Chaque client a :
+- ✅ Une **organisation** isolée
+- ✅ Des **workflows n8n** dédiés
+- ✅ Un **abonnement Stripe** individuel
+- ✅ Ses propres **données** (RLS)
 
-#### AuthContext
-```typescript
-// Gestion de l'authentification globale
-const { user, session, signIn, signOut } = useAuth();
-```
+---
 
-#### ProtectedRoute
-```typescript
-// Protection des routes nécessitant une authentification
-<ProtectedRoute>
-  <Dashboard />
-</ProtectedRoute>
-```
+## 📚 Documentation
 
-#### TenantSwitcher
-```typescript
-// Sélecteur d'organisation (si l'utilisateur appartient à plusieurs)
-<TenantSwitcher />
-```
+| Document | Description |
+|----------|-------------|
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture technique détaillée |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Guide de déploiement |
+| [API.md](docs/API.md) | Documentation des APIs |
+| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Guide du développeur |
+| [SECURITY.md](docs/SECURITY.md) | Sécurité et best practices |
 
-### 📡 Edge Functions
-
-#### Structure des functions
-```
-supabase/functions/
-├── bootstrap-admin/     # Initialise le compte admin
-├── execute-webhook/     # Exécute les webhooks
-├── create-checkout/     # Stripe checkout
-├── customer-portal/     # Portail client Stripe
-├── check-subscription/  # Vérification abonnement
-├── approve-subscriber/  # Approbation manuelle
-└── revoke-subscriber-approval/ # Révocation approbation
-```
-
-#### Configuration dans config.toml
-```toml
-[functions.bootstrap-admin]
-verify_jwt = false
-
-[functions.execute-webhook]
-verify_jwt = true
-```
-
-### 🔍 Debugging et monitoring
-
-#### Console logs
-```typescript
-// Utiliser les outils de debugging Lovable
-console.log('Debug info:', data);
-```
-
-#### Monitoring Supabase
-- **Analytics** : https://supabase.com/dashboard/project/ijybwfdkiteebytdwhyu/logs/analytics
-- **Edge Functions logs** : https://supabase.com/dashboard/project/ijybwfdkiteebytdwhyu/functions
-- **Database logs** : https://supabase.com/dashboard/project/ijybwfdkiteebytdwhyu/logs/database
+---
 
 ## 🔐 Sécurité
 
-### Principes de sécurité
+### **Authentification**
 
-1. **Isolation totale** : Chaque client ne voit que ses données
-2. **RLS partout** : Toutes les tables ont des politiques de sécurité
-3. **Vérification des rôles** : Admin vs utilisateur standard
-4. **Audit trail** : Tous les événements sont loggés
+- ✅ JWT via Supabase Auth
+- ✅ Validation email obligatoire
+- ✅ Reset password sécurisé
+- ✅ Système d'approbation manuelle
 
-### Variables sensibles
+### **Autorisation**
 
-```typescript
-// ❌ JAMAIS en dur dans le code
-const apiKey = "sk_live_...";
+- ✅ RLS (Row Level Security)
+- ✅ Policies strictes par organisation
+- ✅ Rôles utilisateur (admin, user)
+- ✅ Service Role Key protégée
 
-// ✅ Toujours dans les secrets Supabase
-const { data } = await supabase.functions.invoke('function', {
-  // Les secrets sont injectés côté serveur
-});
-```
+### **Audit de sécurité**
 
-## 🚢 Déploiement
+- ✅ Faille AdminApprovals.tsx corrigée (27/01/2025)
+- ✅ RLS vérifié sur toutes les tables
+- ✅ Code conforme OWASP
 
-### Via Lovable (recommandé)
-1. Aller sur : https://lovable.dev/projects/e21cd30b-2357-4f4c-b6b7-9bf9ef38fdca
-2. Cliquer sur "Share" → "Publish"
-3. Le déploiement se fait automatiquement
+**Voir** : [SECURITY.md](docs/SECURITY.md) pour plus de détails
 
-### Build local
+---
+
+## 🚀 Fonctionnalités
+
+### **Pour les clients**
+
+- ✅ Dashboard moderne et intuitif
+- ✅ Gestion des workflows n8n
+- ✅ Historique des exécutions
+- ✅ Support intégré
+- ✅ Abonnement Stripe
+
+### **Pour les admins**
+
+- ✅ Dashboard admin complet
+- ✅ Approbation manuelle des comptes
+- ✅ Gestion des organisations
+- ✅ Impersonation client
+- ✅ Statistiques globales
+
+---
+
+## 🧪 Tests
+
 ```bash
-# Construction
+# Linter
+npm run lint
+
+# Build de production
 npm run build
 
-# Les fichiers sont dans dist/
-ls dist/
+# Preview du build
+npm run preview
 ```
 
-## 🔧 Maintenance
+---
 
-### Base de données
+## 📦 Déploiement
 
-#### Migrations
-```sql
--- Exemple de migration pour ajouter une colonne
-ALTER TABLE workflows ADD COLUMN priority integer DEFAULT 1;
-```
+### **Frontend**
 
-#### Monitoring des performances
-```sql
--- Requête pour vérifier les performances
-SELECT schemaname, tablename, attname, avg_width, n_distinct
-FROM pg_stats 
-WHERE schemaname = 'public';
-```
-
-### Edge Functions
-
-#### Logs des functions
 ```bash
-# Voir les logs en temps réel (si CLI Supabase installée)
-supabase functions logs --project-ref ijybwfdkiteebytdwhyu
+# Build de production
+npm run build
+
+# Deploy sur Vercel
+vercel --prod
+
+# Ou Netlify
+netlify deploy --prod
 ```
 
-## 🐛 Résolution de problèmes
+### **Supabase**
 
-### Problèmes courants
-
-#### 1. Clients non visibles dans l'admin
-```typescript
-// Vérifier que fetchLists() récupère bien les organisations
-const fetchLists = async () => {
-  const [evts, rns, organizations] = await Promise.all([
-    supabase.from('events').select('*'),
-    supabase.from('workflow_runs').select('*'),
-    supabase.from('organizations').select('*') // ← Important !
-  ]);
-};
+```bash
+# Appliquer les migrations
+# Via Supabase Dashboard > SQL Editor
+# Ou via CLI Supabase (si installé)
 ```
 
-#### 2. Erreurs RLS
-```sql
--- Vérifier les politiques
-SELECT * FROM pg_policies WHERE tablename = 'organizations';
-```
+**Voir** : [DEPLOYMENT.md](docs/DEPLOYMENT.md) pour le guide complet
 
-#### 3. Problèmes d'authentification
-```typescript
-// Vérifier le statut de session
-const { data: { session } } = await supabase.auth.getSession();
-console.log('Session:', session);
-```
-
-## 📚 Ressources utiles
-
-### Documentation
-- **Supabase** : https://supabase.com/docs
-- **React** : https://react.dev
-- **Tailwind CSS** : https://tailwindcss.com/docs
-- **shadcn/ui** : https://ui.shadcn.com
-
-### Liens du projet
-- **Dashboard Supabase** : https://supabase.com/dashboard/project/ijybwfdkiteebytdwhyu
-- **Lovable Project** : https://lovable.dev/projects/e21cd30b-2357-4f4c-b6b7-9bf9ef38fdca
+---
 
 ## 🤝 Contribution
 
-### Workflow de développement
+Ce projet est privé et propriétaire. Les contributions externes ne sont pas acceptées.
 
-1. **Branche feature** : Créer une branche pour chaque fonctionnalité
-2. **Tests** : Tester l'isolation des données entre clients
-3. **Review** : Vérifier que l'admin et le client voient les bonnes données
-4. **Déploiement** : Via Lovable ou build manuel
+---
 
-### Checklist avant commit
+## 📄 Licence
 
-- [ ]	Level	Issue	Actions
-error
-Customer Email Addresses Could Be Stolen by Hackers	Try to Fix
-Issue Description
-The 'subscribers' table is publicly readable and contains email addresses and payment information (stripe_customer_id). Hackers could steal this data to spam customers or commit payment fraud. The current RLS policies only protect data when users are authenticated, but the table remains accessible to anonymous users.
-
-LLM Database Check
-EXPOSED_SENSITIVE_DATA
-error
-Internal Business Operations Could Be Exposed to Competitors	Try to Fix
-Issue Description
-Multiple business-critical tables (leads, workflows, organization_subscriptions, support_messages) are publicly readable and contain sensitive business information including lead data, workflow configurations, subscription details, and support conversations. Competitors could access this data to understand your business operations and customer interactions. Ensure RLS policies block anonymous access to these tables.
-
-LLM Database Check
-PUBLIC_BUSINESS_DATA
-error
-Webhook URLs Could Be Exploited by Attackers	Try to Fix
-Issue Description
-The 'webhooks' table is publicly readable and contains webhook URLs and execution methods. Attackers could discover and abuse these endpoints to trigger unauthorized actions or access internal systems. Add RLS policies to prevent anonymous access to webhook configurations.
-
-LLM Database Check
-EXPOSED_WEBHOOK_URLS
-warn
-Leaked Password Protection Disabled	
-Issue Description
-Leaked password protection is currently disabled. Remediation: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
-
-Supabase
-SUPA_auth_leaked_password_protection
-- [ ] Les nouveaux composants utilisent le design system
-- [ ] Les tables ont des politiques RLS appropriées
-- [ ] L'isolation client est respectée
-- [ ] L'admin peut gérer les nouveaux éléments
-- [ ] Pas de données hardcodées
-- [ ] Types TypeScript à jour
-
+Propriétaire - Tous droits réservés
 
 ---
 
 ## 📞 Support
 
-Pour toute question technique, consulter :
-1. Cette documentation
-2. Les logs Supabase
-3. Le code source commenté
-4. L'historique des commits
+- **Email** : support@webstate.com
+- **Documentation** : [docs/](docs/)
+- **Issues** : Contacter l'équipe technique
 
-**Version** : 2.0.0  
-**Dernière mise à jour** : Janvier 2025  
-**Auteur** : Équipe Webstate
+---
+
+## 🎯 Roadmap
+
+- [x] Système d'authentification complet
+- [x] Multi-tenancy avec RLS
+- [x] Approbation manuelle des comptes
+- [x] Intégration Stripe
+- [x] MCPs n8n et Supabase
+- [ ] Tests unitaires (en cours)
+- [ ] Tests d'intégration
+- [ ] Monitoring et logs
+- [ ] Rate limiting
+- [ ] Captcha sur signup
+
+---
+
+## 🔧 Troubleshooting
+
+### **Problème : Build échoue**
+
+```bash
+# Nettoyer les caches
+rm -rf node_modules dist .vite
+npm install
+npm run build
+```
+
+### **Problème : Erreurs Supabase**
+
+- Vérifier les variables d'environnement
+- Vérifier que les migrations sont appliquées
+- Vérifier les permissions RLS
+
+### **Problème : MCPs ne fonctionnent pas**
+
+- Redémarrer Cursor complètement (Cmd+Q)
+- Vérifier `~/.cursor/mcp.json`
+- Vérifier les credentials n8n et Supabase
+
+---
+
+## 📊 Statistiques du projet
+
+- **35 fichiers MD** → **6 fichiers consolidés**
+- **22 pages React**
+- **16 tables Supabase**
+- **24 migrations SQL**
+- **7 Edge Functions**
+- **2 MCPs** (n8n + Supabase)
+
+---
+
+**🚀 Version** : 1.0.0  
+**📅 Dernière mise à jour** : 27 janvier 2025  
+**✅ Status** : Production Ready

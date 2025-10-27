@@ -10,9 +10,7 @@ import { CardPremium, CardContent as CardContentPremium, CardHeader as CardHeade
 
 import { toast } from "sonner";
 import { SubscriptionPanel } from "@/components/SubscriptionPanel";
-import { SiteSection } from "@/components/dashboard/SiteSection";
 import { AutomationSection } from "@/components/dashboard/AutomationSection";
-import { ActivitySection } from "@/components/dashboard/ActivitySection";
 import { SupportSection } from "@/components/dashboard/SupportSection";
 import WorkflowPanel from "@/components/dashboard/WorkflowPanel";
 import { ArrowLeft, Check, Star, Zap, Crown, CreditCard, Calendar, Users, Shield, ArrowRight } from "lucide-react";
@@ -37,6 +35,44 @@ const Dashboard = () => {
   
   document.title = "Dashboard — n8n Client Hub";
 
+  const checkApprovalStatus = async () => {
+    if (!user) return;
+    
+    try {
+      // Vérifier si l'utilisateur est admin (les admins bypassent la vérification)
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      
+      if (roleData) {
+        console.log("User is admin, bypassing approval check");
+        return; // Admin bypass
+      }
+      
+      // Vérifier le statut d'approbation de l'organisation
+      const { data: org, error } = await supabase
+        .from("organizations")
+        .select("id, approved")
+        .eq("owner_id", user.id)
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Error checking approval status:", error);
+        return;
+      }
+      
+      if (org && !org.approved) {
+        console.log("Organization not approved, redirecting to pending page");
+        navigate("/pending-approval", { replace: true });
+      }
+    } catch (error) {
+      console.error("Error in checkApprovalStatus:", error);
+    }
+  };
+
   useEffect(() => {
     console.log('Dashboard: Initial effect, checking impersonation mode...');
     // Vérifier si on est en mode impersonation (admin connecté dans un compte client)
@@ -48,6 +84,9 @@ const Dashboard = () => {
       setOrgId(parsed.target_org_id);
       return;
     }
+    
+    // Vérifier le statut d'approbation de l'organisation
+    checkApprovalStatus();
     
     // Mode normal : utiliser l'org stockée ou chercher l'org par défaut
     const stored = localStorage.getItem("orgId");
@@ -341,13 +380,8 @@ const Dashboard = () => {
             </Card>
           </section>
 
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SiteSection orgId={orgId} />
-            <AutomationSection workflows={workflows} onTrigger={(w) => triggerRun(w)} />
-          </section>
-
           <section>
-            <ActivitySection runs={runsRef.current} orgId={orgId} />
+            <AutomationSection workflows={workflows} onTrigger={(w) => triggerRun(w)} />
           </section>
         </TabsContent>
 

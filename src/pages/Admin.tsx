@@ -79,28 +79,24 @@ const Admin = () => {
   useEffect(() => {
     if (!isAdmin) return;
     const fetchCounts = async () => {
-      const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
-      const [orgs, workflows, leads, errors] = await Promise.all([
+      const [orgs, workflows] = await Promise.all([
         supabase.from('organizations').select('id', { count: 'exact', head: true }),
         supabase.from('workflows').select('id', { count: 'exact', head: true }),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).gte('created_at', since),
-        supabase.from('events').select('id', { count: 'exact', head: true }).gte('created_at', since).eq('type', 'error'),
       ]);
       setCounts({
         orgs: orgs.count ?? 0,
         workflows: workflows.count ?? 0,
-        leads7d: leads.count ?? 0,
-        errors7d: errors.count ?? 0,
+        leads7d: 0, // Deprecated: leads table removed
+        errors7d: 0, // Deprecated: events table removed
       });
     };
 
     const fetchLists = async () => {
-      const [{ data: evts }, { data: rns }, { data: organizations }] = await Promise.all([
-        supabase.from('events').select('id,type,created_at,org_id,meta').order('created_at', { ascending: false }).limit(20),
+      const [{ data: rns }, { data: organizations }] = await Promise.all([
         supabase.from('workflow_runs').select('id,status,started_at,finished_at,workflow_id').order('started_at', { ascending: false }).limit(20),
         supabase.from('organizations').select('id,name,created_at,owner_id').order('created_at', { ascending: false }),
       ]);
-      setEvents(evts || []);
+      setEvents([]); // Deprecated: events table removed
       setRuns(rns || []);
       setOrgs(organizations || []);
     };

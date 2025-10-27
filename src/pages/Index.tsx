@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { PricingSection } from "@/components/pricing-section";
-import { CTASection } from "@/components/cta-section";
 import { Footer } from "@/components/footer";
 import { VideoSection } from "@/components/ui/video-section";
 import { AvatarCircles } from "@/components/magicui/avatar-circles";
@@ -520,8 +519,6 @@ const Index = () => {
          </div>
        </section>
        
-       {/* Final CTA Section */}
-       <CTASection />
     </main>
     
     {/* Footer */}

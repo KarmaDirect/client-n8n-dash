@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase",
+        "https://ijybwfdkiteebytdwhyu.supabase.co",
+        "VOTRE_SERVICE_ROLE_KEY_ICI"
+      ],
+      "env": {
+        "SUPABASE_URL": "https://ijybwfdkiteebytdwhyu.supabase.co",
+        "SUPABASE_SERVICE_ROLE_KEY": "VOTRE_SERVICE_ROLE_KEY_ICI"
+      }
+    },
+    "n8n": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "n8n-mcp"
+      ],
+      "env": {
+        "N8N_API_URL": "VOTRE_URL_N8N_ICI",
+        "N8N_API_KEY": "VOTRE_CLE_API_N8N_ICI"
+      }
+    }
+  }
+}
+
