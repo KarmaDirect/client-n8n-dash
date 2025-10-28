@@ -1,0 +1,50 @@
+{
+  "resourceType": "workflows",
+  "count": 5,
+  "workflows": [
+    {
+      "id": "PuxiE1p4wpl11snV",
+      "name": "Hello World Webhook",
+      "active": false,
+      "status": "⚪ Inactive",
+      "updatedAt": "2025-10-21T19:59:19.196Z",
+      "createdAt": "2025-10-21T19:51:38.855Z"
+    },
+    {
+      "id": "PvybaIdGOuTDcYvt",
+      "name": "SMS Rappels RDV - Artisan",
+      "active": false,
+      "status": "⚪ Inactive",
+      "updatedAt": "2025-10-26T21:32:42.877Z",
+      "createdAt": "2025-10-21T19:56:41.202Z"
+    },
+    {
+      "id": "2967dxM9R2nFQmv0",
+      "name": "Automated LinkedIn Content Creation with GPT-4 and DALL-E for Scheduled Posts",
+      "active": false,
+      "status": "⚪ Inactive",
+      "updatedAt": "2025-10-26T21:32:24.560Z",
+      "createdAt": "2025-10-25T20:24:21.469Z"
+    },
+    {
+      "id": "lPNPNZKnxvOMkZsi",
+      "name": "Interview Scheduling Automation with Google Sheets, Calendar, Gmail & GPT-4o'",
+      "active": false,
+      "status": "⚪ Inactive",
+      "updatedAt": "2025-10-25T20:26:27.062Z",
+      "createdAt": "2025-10-25T20:26:27.062Z"
+    },
+    {
+      "id": "B3QwsLcoEMCf7GOq",
+      "name": "Generate Leads with Google Maps",
+      "active": false,
+      "status": "⚪ Inactive",
+      "updatedAt": "2025-10-25T20:34:51.417Z",
+      "createdAt": "2025-10-25T20:34:51.417Z"
+    }
+  ],
+  "_links": {
+    "self": "n8n://workflows"
+  },
+  "lastUpdated": "2025-10-27T18:32:01.649Z"
+}

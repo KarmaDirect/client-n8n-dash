@@ -78,3 +78,5 @@ COMMENT ON SCHEMA public IS 'Schéma principal - Architecture n8n pure (tables o
 -- - src/integrations/supabase/types.ts (supprimer les types Sites, Pages, Documents, Events, Leads)
 
 
+
+

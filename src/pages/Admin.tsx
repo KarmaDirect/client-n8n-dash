@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import AdminOrgDetails from "@/components/admin/AdminOrgDetails";
-import WebhookManager from "@/components/admin/WebhookManager";
-import { UserCheck, Webhook } from "lucide-react";
+import WorkflowManager from "@/components/admin/WorkflowManager";
+import { UserCheck, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -205,8 +205,8 @@ const Admin = () => {
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="subscriptions">Abonnements</TabsTrigger>
           <TabsTrigger value="workflows">
-            <Webhook className="h-4 w-4 mr-2" />
-            Gestion N8N
+            <Rocket className="h-4 w-4 mr-2" />
+            Gestion Workflows
           </TabsTrigger>
         </TabsList>
         
@@ -481,7 +481,7 @@ const Admin = () => {
         </TabsContent>
         
         <TabsContent value="workflows">
-          <WebhookManager />
+          <WorkflowManager />
         </TabsContent>
       </Tabs>
 

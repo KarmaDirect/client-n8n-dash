@@ -349,3 +349,5 @@ const { data, error } = await supabase.rpc('approve_organization', {
 **📅 Dernière mise à jour** : 27 janvier 2025
 
 
+
+
