@@ -238,6 +238,11 @@ const AdminHealth = () => {
                     {health.n8n === "healthy" ? "✅ Accessible" : health.n8n === "degraded" ? "⚠️ Dégradé" : "❌ Erreur"}
                   </span>
                 </div>
+                {health.n8n !== "healthy" && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Vérifiez que N8N_API_URL et N8N_API_KEY sont configurés dans les Edge Functions
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
