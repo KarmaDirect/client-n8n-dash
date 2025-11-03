@@ -77,16 +77,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         'admin': 'Admin',
         'clients': 'Gestion Clients',
         'workflows': 'Workflows Multi-tenant',
-        'support': 'Support Chat',
         'health': 'Santé Système',
         'metrics': 'Métriques Globales',
       };
 
       if (paths[0] === 'app' && paths.length > 1) {
-        breadcrumbs.push({
-          label: pathMap[currentPath] || currentPath.charAt(0).toUpperCase() + currentPath.slice(1),
-          href: location.pathname
-        });
+        // Si c'est une route admin, ajouter Admin dans le breadcrumb
+        if (paths[1] === 'admin' && paths.length > 2) {
+          breadcrumbs.push({ label: 'Admin', href: '/app/admin' });
+          breadcrumbs.push({
+            label: pathMap[currentPath] || currentPath.charAt(0).toUpperCase() + currentPath.slice(1),
+            href: location.pathname
+          });
+        } else {
+          breadcrumbs.push({
+            label: pathMap[currentPath] || currentPath.charAt(0).toUpperCase() + currentPath.slice(1),
+            href: location.pathname
+          });
+        }
       }
     }
 
