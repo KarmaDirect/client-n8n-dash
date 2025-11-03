@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useAdmin } from "@/hooks/useAdmin";
 import { Badge } from "@/components/ui/badge";
-import { useTheme } from "next-themes";
 import {
   SidebarProvider,
   Sidebar,
@@ -41,8 +40,6 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  Sun,
-  Moon,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -53,7 +50,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user } = useAuth();
   const location = useLocation();
   const { isAdmin, loading: adminLoading } = useAdmin();
-  const { theme, setTheme } = useTheme();
 
   const menuItems = [
     {
@@ -234,24 +230,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               )}
             </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                aria-label="Toggle dark mode"
-                className="h-9 w-9"
-              >
-                {theme === "dark" ? (
-                  <Sun className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  <Moon className="h-4 w-4" aria-hidden="true" />
-                )}
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()} aria-label="Se déconnecter">
-                Se déconnecter
-              </Button>
-            </div>
+            <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()} aria-label="Se déconnecter">
+              Se déconnecter
+            </Button>
           </div>
         </div>
         <main className="min-h-[calc(100vh-3.5rem)] p-6">
