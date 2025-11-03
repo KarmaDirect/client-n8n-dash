@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useAdmin } from "@/hooks/useAdmin";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "next-themes";
 import {
   SidebarProvider,
   Sidebar,
@@ -40,6 +41,8 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -50,6 +53,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user } = useAuth();
   const location = useLocation();
   const { isAdmin, loading: adminLoading } = useAdmin();
+  const { theme, setTheme } = useTheme();
 
   const menuItems = [
     {
@@ -147,7 +151,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" className="border-r">
+      <Sidebar collapsible="icon" className="border-r" role="navigation" aria-label="Navigation principale">
         <SidebarHeader className="px-3 py-4">
           <div className="flex items-center gap-2 px-1">
             <div className="size-7 rounded-md bg-primary/10 flex items-center justify-center">
@@ -201,9 +205,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <SidebarMenuButton 
                   asChild 
                   className="bg-primary/10 hover:bg-primary/20 text-primary"
+                  aria-label="Ouvrir le chat support IA"
                 >
                   <button className="flex items-center gap-2 w-full">
-                    <MessageSquare className="w-4 h-4" />
+                    <MessageSquare className="w-4 h-4" aria-hidden="true" />
                     <span>Chat Support IA</span>
                   </button>
                 </SidebarMenuButton>
@@ -216,22 +221,37 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="sticky top-0 z-10 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
           <div className="flex h-14 items-center justify-between px-4">
             <div className="flex items-center gap-3">
-              <SidebarTrigger />
+              <SidebarTrigger aria-label="Toggle sidebar" />
             <div className="hidden sm:flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground" aria-label="User email">
                 {user?.email ? `Connecté en tant que ${user.email.split('@')[0]}` : "Dashboard"}
               </span>
               {isAdmin && (
-                <Badge variant="default" className="gap-1 bg-purple-600 text-white border-purple-700">
-                  <Shield className="w-3 h-3" />
+                <Badge variant="default" className="gap-1 bg-purple-600 text-white border-purple-700" aria-label="Administrateur">
+                  <Shield className="w-3 h-3" aria-hidden="true" />
                   Admin
                 </Badge>
               )}
             </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
-              Se déconnecter
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                aria-label="Toggle dark mode"
+                className="h-9 w-9"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <Moon className="h-4 w-4" aria-hidden="true" />
+                )}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()} aria-label="Se déconnecter">
+                Se déconnecter
+              </Button>
+            </div>
           </div>
         </div>
         <main className="min-h-[calc(100vh-3.5rem)] p-6">

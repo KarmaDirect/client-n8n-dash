@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { toast } from "sonner";
-import { Rocket, AlertCircle, Loader2 } from "lucide-react";
+import { Rocket, AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import WorkflowCard from "./WorkflowCard";
 
@@ -100,8 +102,18 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="space-y-6">
+        <Card className="dashboard-card">
+          <CardHeader>
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -121,14 +133,11 @@ const WorkflowPanel = ({ orgId }: { orgId: string }) => {
         </CardHeader>
         <CardContent>
           {workflows.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <AlertCircle className="h-16 w-16 mx-auto mb-4 opacity-30" />
-              <p className="text-lg font-medium mb-2">Aucun workflow disponible</p>
-              <p className="text-sm">
-                Contactez votre administrateur pour configurer vos premières
-                automations
-              </p>
-            </div>
+            <EmptyState
+              icon={AlertCircle}
+              title="Aucun workflow disponible"
+              description="Contactez votre administrateur pour configurer vos premières automations"
+            />
           ) : (
             <div className="space-y-4">
               {workflows.map((workflow) => (

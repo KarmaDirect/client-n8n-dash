@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, Mail, LogOut } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -59,8 +60,21 @@ const PendingApproval = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+        <div className="w-full max-w-md">
+          <Card className="border-0 shadow-2xl">
+            <CardHeader className="text-center pb-4">
+              <Skeleton className="h-16 w-16 rounded-full mx-auto mb-4" />
+              <Skeleton className="h-8 w-64 mx-auto mb-2" />
+              <Skeleton className="h-4 w-48 mx-auto" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }

@@ -6,6 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useAdmin } from "@/hooks/useAdmin";
 import { Users, CheckCircle2, XCircle, Eye, Activity, Search } from "lucide-react";
 import { toast } from "sonner";
@@ -114,8 +116,25 @@ const AdminClients = () => {
   if (loading || loadingOrgs) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center py-12">
-          <p className="text-muted-foreground">Chargement...</p>
+        <div className="space-y-6">
+          <div>
+            <Skeleton className="h-10 w-64 mb-2" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <div className="grid gap-4 md:grid-cols-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-64 w-full" />
+            </CardContent>
+          </Card>
         </div>
       </DashboardLayout>
     );
@@ -196,9 +215,19 @@ const AdminClients = () => {
           </CardHeader>
           <CardContent>
             {filteredOrgs.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                Aucun client trouvé
-              </div>
+              organizations.length === 0 ? (
+                <EmptyState
+                  icon={Users}
+                  title="Aucun client enregistré"
+                  description="Les clients apparaîtront ici une fois qu'ils auront créé un compte"
+                />
+              ) : (
+                <EmptyState
+                  icon={Search}
+                  title="Aucun résultat trouvé"
+                  description={`Aucun client ne correspond à "${searchQuery}"`}
+                />
+              )
             ) : (
               <Table>
                 <TableHeader>
