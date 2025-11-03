@@ -49,15 +49,27 @@ const AdminHealth = () => {
       const { error: sbError } = await supabase.from("organizations").select("id").limit(1);
       const supabaseStatus = sbError ? "down" : "healthy";
 
-      // Vérifier n8n (via Edge Function)
+      // Vérifier n8n (via Edge Function dédiée)
       let n8nStatus: "healthy" | "degraded" | "down" = "down";
       try {
-        const { error: n8nError } = await supabase.functions.invoke("manage-client-workflows", {
-          body: { action: "verify" },
-        });
-        n8nStatus = n8nError ? "down" : "healthy";
-      } catch {
-        n8nStatus = "degraded";
+        const { data: n8nHealthData, error: n8nError } = await supabase.functions.invoke("n8n-health-check");
+        
+        if (n8nError) {
+          console.error("n8n health check error:", n8nError);
+          n8nStatus = "down";
+        } else if (n8nHealthData) {
+          // L'Edge Function retourne { status: 'healthy' | 'degraded' | 'down', connected: boolean }
+          if (n8nHealthData.status === 'healthy' && n8nHealthData.connected) {
+            n8nStatus = "healthy";
+          } else if (n8nHealthData.status === 'degraded') {
+            n8nStatus = "degraded";
+          } else {
+            n8nStatus = "down";
+          }
+        }
+      } catch (err) {
+        console.error("n8n health check exception:", err);
+        n8nStatus = "down";
       }
 
       // Stats workflows
