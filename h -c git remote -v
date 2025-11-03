@@ -1,5 +1,0 @@
-[33m02adba0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Feat: Ajout de toutes les pages du site (Fonctionnalités, Cas d'Usage, API, À propos, Blog, Contact, etc.)
-[33m2c94956[m Fix: Ajout du package motion pour corriger les erreurs de build Vercel
-[33m3d3d2cd[m Mise à jour des composants UI et améliorations de l'interface
-[33md368390[m Update README.md
-[33m0ac1148[m Fix payment information access
