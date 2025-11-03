@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Send, Loader2, User, MessageSquare } from "lucide-react";
+import { Send, Loader2, User, MessageSquare, CheckCircle2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Message { 
   id: string; 
@@ -14,6 +15,8 @@ interface Message {
   message: string; 
   created_at: string;
   user_id?: string;
+  read?: boolean;
+  read_at?: string | null;
 }
 
 export const SupportSection = ({ orgId, calendlyUrl = "https://calendly.com/your-link" }: { orgId?: string, calendlyUrl?: string }) => {
@@ -22,11 +25,52 @@ export const SupportSection = ({ orgId, calendlyUrl = "https://calendly.com/your
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!orgId) return;
     fetchMessages();
+    
+    // Setup realtime pour les nouveaux messages
+    const channel = supabase
+      .channel(`support_messages_client_${orgId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'support_messages',
+        filter: `org_id=eq.${orgId}`
+      }, (payload) => {
+        const newMessage = payload.new as Message;
+        setMessages((prev) => [...prev, newMessage]);
+        // Marquer les messages admin comme lus quand ils arrivent
+        if (newMessage.author === 'admin' && !newMessage.read) {
+          markAsRead(newMessage.id);
+        }
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'support_messages',
+        filter: `org_id=eq.${orgId}`
+      }, (payload) => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === payload.new.id ? (payload.new as Message) : msg
+          )
+        );
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [orgId]);
+
+  useEffect(() => {
+    // Scroll vers le bas quand de nouveaux messages arrivent
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const fetchMessages = async () => {
     if (!orgId) return;
@@ -34,18 +78,39 @@ export const SupportSection = ({ orgId, calendlyUrl = "https://calendly.com/your
     try {
       const { data, error } = await supabase
         .from("support_messages")
-        .select("id,author,message,created_at,user_id")
+        .select("*")
         .eq("org_id", orgId)
         .order("created_at", { ascending: true })
-        .limit(50);
+        .limit(100);
 
       if (error) throw error;
       setMessages(data || []);
+      
+      // Marquer tous les messages admin non lus comme lus
+      const unreadAdminMessages = (data || []).filter(
+        (msg) => msg.author === 'admin' && !msg.read
+      );
+      if (unreadAdminMessages.length > 0) {
+        await Promise.all(
+          unreadAdminMessages.map((msg) => markAsRead(msg.id))
+        );
+      }
     } catch (error: any) {
       console.error("Error fetching messages:", error);
       toast.error("Erreur lors du chargement des messages");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const markAsRead = async (messageId: string) => {
+    try {
+      await supabase
+        .from('support_messages')
+        .update({ read: true, read_at: new Date().toISOString() })
+        .eq('id', messageId);
+    } catch (error) {
+      console.error('Error marking as read:', error);
     }
   };
 
@@ -59,13 +124,14 @@ export const SupportSection = ({ orgId, calendlyUrl = "https://calendly.com/your
         author: "client",
         user_id: user?.id,
         message: text.trim(),
+        read: false, // L'admin doit le lire
       });
 
       if (error) throw error;
       
       toast.success("Message envoyé");
       setText("");
-      await fetchMessages();
+      // Le message sera ajouté via realtime
     } catch (error: any) {
       console.error("Error sending message:", error);
       toast.error(error.message || "Erreur lors de l'envoi");
@@ -95,14 +161,15 @@ export const SupportSection = ({ orgId, calendlyUrl = "https://calendly.com/your
               {messages.map((m) => (
                 <div
                   key={m.id}
-                  className={`flex ${m.author === "client" ? "justify-end" : "justify-start"}`}
+                  className={cn("flex", m.author === "client" ? "justify-end" : "justify-start")}
                 >
                   <div
-                    className={`max-w-[80%] rounded-lg p-3 ${
+                    className={cn(
+                      "max-w-[80%] rounded-lg p-3",
                       m.author === "client"
                         ? "bg-primary text-primary-foreground"
                         : "bg-card border"
-                    }`}
+                    )}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       {m.author === "client" ? (
@@ -113,6 +180,9 @@ export const SupportSection = ({ orgId, calendlyUrl = "https://calendly.com/your
                       <span className="text-xs opacity-70">
                         {m.author === "client" ? "Vous" : "Support"}
                       </span>
+                      {m.author === "client" && m.read && (
+                        <CheckCircle2 className="w-3 h-3 opacity-50" />
+                      )}
                       <span className="text-xs opacity-50">
                         {formatDistanceToNow(new Date(m.created_at), { 
                           addSuffix: true
@@ -123,6 +193,7 @@ export const SupportSection = ({ orgId, calendlyUrl = "https://calendly.com/your
                   </div>
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
         )}

@@ -17,6 +17,7 @@ import AdminClients from "./pages/admin/AdminClients";
 import AdminWorkflowsPage from "./pages/admin/AdminWorkflowsPage";
 import AdminHealth from "./pages/admin/AdminHealth";
 import AdminMetrics from "./pages/admin/AdminMetrics";
+import AdminSupportChat from "./pages/admin/AdminSupportChat";
 import PendingApproval from "./pages/PendingApproval";
 import AdminApprovals from "./pages/AdminApprovals";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -69,6 +70,7 @@ const App = () => (
             {/* Admin routes - intégrées dans /app */}
             <Route path="/app/admin/clients" element={<ProtectedRoute><AdminClients /></ProtectedRoute>} />
             <Route path="/app/admin/workflows" element={<ProtectedRoute><AdminWorkflowsPage /></ProtectedRoute>} />
+            <Route path="/app/admin/support" element={<ProtectedRoute><AdminSupportChat /></ProtectedRoute>} />
             <Route path="/app/admin/health" element={<ProtectedRoute><AdminHealth /></ProtectedRoute>} />
             <Route path="/app/admin/metrics" element={<ProtectedRoute><AdminMetrics /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

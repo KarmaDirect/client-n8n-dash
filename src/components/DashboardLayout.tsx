@@ -77,6 +77,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         'admin': 'Admin',
         'clients': 'Gestion Clients',
         'workflows': 'Workflows Multi-tenant',
+        'support': 'Support Chat',
         'health': 'Santé Système',
         'metrics': 'Métriques Globales',
       };
@@ -162,29 +163,34 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     },
     // Menu Admin - Visible uniquement si isAdmin
     ...(isAdmin ? [{
-      title: "Admin",
-      items: [
-        {
-          title: "Gestion Clients",
-          url: "/app/admin/clients",
-          icon: Users,
-        },
-        {
-          title: "Workflows Multi-tenant",
-          url: "/app/admin/workflows",
-          icon: Rocket,
-        },
-        {
-          title: "Santé Système",
-          url: "/app/admin/health",
-          icon: Activity,
-        },
-        {
-          title: "Métriques Globales",
-          url: "/app/admin/metrics",
-          icon: BarChart3,
-        },
-      ],
+            title: "Admin",
+            items: [
+              {
+                title: "Gestion Clients",
+                url: "/app/admin/clients",
+                icon: Users,
+              },
+              {
+                title: "Support Chat",
+                url: "/app/admin/support",
+                icon: MessageSquare,
+              },
+              {
+                title: "Workflows Multi-tenant",
+                url: "/app/admin/workflows",
+                icon: Rocket,
+              },
+              {
+                title: "Santé Système",
+                url: "/app/admin/health",
+                icon: Activity,
+              },
+              {
+                title: "Métriques Globales",
+                url: "/app/admin/metrics",
+                icon: BarChart3,
+              },
+            ],
     }] : []),
   ];
 
