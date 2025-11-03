@@ -15,6 +15,18 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
+// Helper function pour formater la date de manière sécurisée
+const formatDateSafe = (dateString: string | null | undefined): string => {
+  if (!dateString) return 'Date inconnue';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Date invalide';
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch {
+    return 'Date invalide';
+  }
+};
+
 interface SupportMessage {
   id: string;
   org_id: string;
@@ -341,7 +353,7 @@ const AdminSupportChat = () => {
                           "text-xs mt-1",
                           selectedOrgId === conv.org_id ? "text-primary-foreground/60" : "text-muted-foreground"
                         )}>
-                          {formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true })}
+                          {formatDateSafe(conv.last_message_at)}
                         </p>
                       </div>
                     ))
@@ -418,7 +430,7 @@ const AdminSupportChat = () => {
                               </div>
                               <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
                               <p className="text-xs opacity-50 mt-1">
-                                {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                                {formatDateSafe(msg.created_at)}
                               </p>
                             </div>
                           </div>

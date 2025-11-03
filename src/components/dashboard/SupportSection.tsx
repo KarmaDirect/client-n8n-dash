@@ -9,6 +9,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
+// Helper function pour formater la date de manière sécurisée
+const formatDateSafe = (dateString: string | null | undefined): string => {
+  if (!dateString) return 'Date inconnue';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Date invalide';
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch {
+    return 'Date invalide';
+  }
+};
+
 interface Message { 
   id: string; 
   author: string; 
@@ -184,9 +196,7 @@ export const SupportSection = ({ orgId, calendlyUrl = "https://calendly.com/your
                         <CheckCircle2 className="w-3 h-3 opacity-50" />
                       )}
                       <span className="text-xs opacity-50">
-                        {formatDistanceToNow(new Date(m.created_at), { 
-                          addSuffix: true
-                        })}
+                        {formatDateSafe(m.created_at)}
                       </span>
                     </div>
                     <p className="text-sm whitespace-pre-wrap break-words">{m.message}</p>
