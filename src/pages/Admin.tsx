@@ -15,6 +15,7 @@ import { UserCheck, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { useDebouncedValue } from "@/hooks/useDebounce";
 
 // EventItem interface removed - events table deprecated
 interface RunItem { id: string; status: string; started_at: string; finished_at: string | null; workflow_id: string }
@@ -40,21 +41,23 @@ const Admin = () => {
   const [runs, setRuns] = useState<RunItem[]>([]);
   const [orgs, setOrgs] = useState<OrgItem[]>([]);
   const [orgSearch, setOrgSearch] = useState("");
+  const debouncedOrgSearch = useDebouncedValue(orgSearch, 300);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
   const [impersonating, setImpersonating] = useState(false);
   const [subscribers, setSubscribers] = useState<SubscriberItem[]>([]);
   const [subsSearch, setSubsSearch] = useState("");
+  const debouncedSubsSearch = useDebouncedValue(subsSearch, 300);
   const [approvingSubEmail, setApprovingSubEmail] = useState<string | null>(null);
   const filteredOrgs = useMemo(() => {
-    const q = orgSearch.trim().toLowerCase();
+    const q = debouncedOrgSearch.trim().toLowerCase();
     if (!q) return orgs;
     return orgs.filter(o => o.name.toLowerCase().includes(q));
-  }, [orgs, orgSearch]);
+  }, [orgs, debouncedOrgSearch]);
   const filteredSubs = useMemo(() => {
-    const q = subsSearch.trim().toLowerCase();
+    const q = debouncedSubsSearch.trim().toLowerCase();
     if (!q) return subscribers;
     return subscribers.filter(s => (s.email || '').toLowerCase().includes(q));
-  }, [subsSearch, subscribers]);
+  }, [debouncedSubsSearch, subscribers]);
 
   useEffect(() => {
     document.title = "Admin Webstate — Vue d'ensemble";

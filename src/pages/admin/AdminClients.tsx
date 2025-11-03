@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useDebouncedValue } from "@/hooks/useDebounce";
 import { Users, CheckCircle2, XCircle, Eye, Activity, Search } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +31,7 @@ const AdminClients = () => {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loadingOrgs, setLoadingOrgs] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
 
   useEffect(() => {
     if (!loading && !isAdmin) {
@@ -101,7 +103,12 @@ const AdminClients = () => {
 
       if (error) throw error;
 
-      toast.success(`Organisation ${!currentApproved ? "approuvée" : "désapprouvée"}`);
+      toast.success(`Organisation ${!currentApproved ? "approuvée" : "désapprouvée"}`, {
+        action: {
+          label: "Actualiser",
+          onClick: () => fetchOrganizations()
+        }
+      });
       fetchOrganizations();
     } catch (error: any) {
       toast.error("Erreur lors de la mise à jour");
@@ -109,8 +116,8 @@ const AdminClients = () => {
   };
 
   const filteredOrgs = organizations.filter((org) =>
-    org.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    org.owner_email?.toLowerCase().includes(searchQuery.toLowerCase())
+    org.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+    org.owner_email?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
   );
 
   if (loading || loadingOrgs) {

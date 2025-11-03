@@ -5,6 +5,14 @@ import { Button } from "@/components/ui/button";
 import { useAdmin } from "@/hooks/useAdmin";
 import { Badge } from "@/components/ui/badge";
 import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
   SidebarProvider,
   Sidebar,
   SidebarContent,
@@ -50,6 +58,41 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user } = useAuth();
   const location = useLocation();
   const { isAdmin, loading: adminLoading } = useAdmin();
+
+  // Générer les breadcrumbs automatiquement
+  const getBreadcrumbs = () => {
+    const paths = location.pathname.split('/').filter(Boolean);
+    const breadcrumbs = [
+      { label: 'Dashboard', href: '/app' }
+    ];
+
+    if (paths.length > 1) {
+      const currentPath = paths[paths.length - 1];
+      const pathMap: Record<string, string> = {
+        'automations': 'Automations',
+        'documents': 'Documents',
+        'pricing': 'Abonnement',
+        'support': 'Support',
+        'settings': 'Paramètres',
+        'admin': 'Admin',
+        'clients': 'Gestion Clients',
+        'workflows': 'Workflows Multi-tenant',
+        'health': 'Santé Système',
+        'metrics': 'Métriques Globales',
+      };
+
+      if (paths[0] === 'app' && paths.length > 1) {
+        breadcrumbs.push({
+          label: pathMap[currentPath] || currentPath.charAt(0).toUpperCase() + currentPath.slice(1),
+          href: location.pathname
+        });
+      }
+    }
+
+    return breadcrumbs;
+  };
+
+  const breadcrumbs = getBreadcrumbs();
 
   const menuItems = [
     {
@@ -236,6 +279,26 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
         <main className="min-h-[calc(100vh-3.5rem)] p-6">
+          {breadcrumbs.length > 1 && (
+            <Breadcrumb className="mb-4">
+              <BreadcrumbList>
+                {breadcrumbs.map((crumb, index) => (
+                  <div key={crumb.href} className="flex items-center">
+                    {index > 0 && <BreadcrumbSeparator />}
+                    <BreadcrumbItem>
+                      {index === breadcrumbs.length - 1 ? (
+                        <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink asChild>
+                          <Link to={crumb.href}>{crumb.label}</Link>
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                  </div>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
+          )}
           {children}
         </main>
       </SidebarInset>

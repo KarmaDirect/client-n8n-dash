@@ -199,7 +199,15 @@ export default function AdminWorkflowsPage() {
       if (data.copied === 0 && data.errors) {
         toast.error(`Échec: ${data.errors.length} erreur(s). Vérifiez les logs.`);
       } else {
-        toast.success(`${data.copied} workflows copiés, ${data.enabled} activés`);
+      toast.success(`${data.copied} workflows copiés, ${data.enabled} activés`, {
+        action: {
+          label: "Voir les workflows",
+          onClick: () => {
+            // Scroll vers la section workflows
+            document.getElementById('client-workflows')?.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      });
       }
 
       setShowVariablesSheet(false);
@@ -264,7 +272,15 @@ export default function AdminWorkflowsPage() {
 
       if (error) throw error;
 
-      toast.success(`Workflow validé et activé avec succès !`);
+      toast.success(`Workflow validé et activé avec succès !`, {
+        action: {
+          label: "Voir le workflow",
+          onClick: () => {
+            // Scroll vers le workflow dans la liste
+            document.getElementById(`workflow-${workflowId}`)?.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      });
       loadClientWorkflows(selectedOrgId);
       loadMetrics(selectedOrgId);
     } catch (error: any) {
