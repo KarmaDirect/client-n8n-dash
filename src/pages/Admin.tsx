@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
-interface EventItem { id: string; type: string; created_at: string; org_id: string; meta: any }
+// EventItem interface removed - events table deprecated
 interface RunItem { id: string; status: string; started_at: string; finished_at: string | null; workflow_id: string }
 interface OrgItem { id: string; name: string; created_at: string; owner_id: string }
 interface SubscriberItem { 
@@ -35,8 +35,8 @@ const Admin = () => {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [counts, setCounts] = useState<{ orgs: number; workflows: number; leads7d: number; errors7d: number }>({ orgs: 0, workflows: 0, leads7d: 0, errors7d: 0 });
-  const [events, setEvents] = useState<EventItem[]>([]);
+  const [counts, setCounts] = useState<{ orgs: number; workflows: number }>({ orgs: 0, workflows: 0 });
+  // Events state removed - events table deprecated
   const [runs, setRuns] = useState<RunItem[]>([]);
   const [orgs, setOrgs] = useState<OrgItem[]>([]);
   const [orgSearch, setOrgSearch] = useState("");
@@ -86,8 +86,6 @@ const Admin = () => {
       setCounts({
         orgs: orgs.count ?? 0,
         workflows: workflows.count ?? 0,
-        leads7d: 0, // Deprecated: leads table removed
-        errors7d: 0, // Deprecated: events table removed
       });
     };
 
@@ -96,7 +94,7 @@ const Admin = () => {
         supabase.from('workflow_runs').select('id,status,started_at,finished_at,workflow_id').order('started_at', { ascending: false }).limit(20),
         supabase.from('organizations').select('id,name,created_at,owner_id').order('created_at', { ascending: false }),
       ]);
-      setEvents([]); // Deprecated: events table removed
+      // Events fetching removed - events table deprecated
       setRuns(rns || []);
       setOrgs(organizations || []);
     };
@@ -212,7 +210,7 @@ const Admin = () => {
         
         <TabsContent value="overview" className="space-y-8">
 
-      <section className="mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <section className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Organisations</CardTitle>
@@ -229,24 +227,6 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold">{counts.workflows}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Leads (7j)</CardTitle>
-            <CardDescription>Nouveaux</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold">{counts.leads7d}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Erreurs (7j)</CardTitle>
-            <CardDescription>Events type "error"</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold">{counts.errors7d}</div>
           </CardContent>
         </Card>
       </section>
@@ -311,32 +291,7 @@ const Admin = () => {
         </Card>
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Activité récente</CardTitle>
-            <CardDescription>Derniers events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {events.length === 0 ? (
-              <div className="text-sm text-muted-foreground">Aucune activité.</div>
-            ) : (
-              <ul className="space-y-2 max-h-80 overflow-auto pr-2">
-                {events.map((e) => (
-                  <li key={e.id} className="p-2 rounded border">
-                    <div className="text-xs text-muted-foreground">
-                      {e.type} — {new Date(e.created_at).toLocaleString()} — org: {e.org_id}
-                    </div>
-                    <pre className="text-xs whitespace-pre-wrap">
-                      {typeof e.meta === 'string' ? e.meta : JSON.stringify(e.meta, null, 2)}
-                    </pre>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
+      <section className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Exécutions récentes</CardTitle>

@@ -35,6 +35,20 @@ serve(async (req) => {
 
     console.log(`[configure-workflow-credentials] Configuring workflow ${workflow_id}`)
 
+    // Normaliser l'URL n8n
+    const N8N_API_URL = Deno.env.get('N8N_API_URL')
+    const N8N_API_KEY = Deno.env.get('N8N_API_KEY')
+
+    if (!N8N_API_URL || !N8N_API_KEY) {
+      throw new Error('N8N_API_URL or N8N_API_KEY not configured')
+    }
+
+    const n8nBaseUrl = N8N_API_URL.replace(/\/api\/v1\/?$/, '')
+    const n8nHeaders = {
+      'X-N8N-API-KEY': N8N_API_KEY,
+      'Content-Type': 'application/json'
+    }
+
     // Validate inputs
     if (!workflow_id) {
       throw new Error('workflow_id is required')
@@ -54,12 +68,8 @@ serve(async (req) => {
 
     // 2. Récupérer le workflow dans n8n
     const n8nResponse = await fetch(
-      `${Deno.env.get('N8N_API_URL')}/workflows/${workflow.n8n_workflow_id}`,
-      {
-        headers: {
-          'X-N8N-API-KEY': Deno.env.get('N8N_API_KEY') ?? '',
-        }
-      }
+      `${n8nBaseUrl}/api/v1/workflows/${workflow.n8n_workflow_id}`,
+      { headers: n8nHeaders }
     )
 
     if (!n8nResponse.ok) {
@@ -108,16 +118,13 @@ serve(async (req) => {
 
     // 4. Mettre à jour le workflow dans n8n
     const updateResponse = await fetch(
-      `${Deno.env.get('N8N_API_URL')}/workflows/${workflow.n8n_workflow_id}`,
+      `${n8nBaseUrl}/api/v1/workflows/${workflow.n8n_workflow_id}`,
       {
-        method: 'PATCH',
-        headers: {
-          'X-N8N-API-KEY': Deno.env.get('N8N_API_KEY') ?? '',
-          'Content-Type': 'application/json'
-        },
+        method: 'PUT',
+        headers: n8nHeaders,
         body: JSON.stringify({
-          nodes: updatedNodes,
-          settings: n8nWorkflow.settings
+          ...n8nWorkflow,
+          nodes: updatedNodes
         })
       }
     )
@@ -151,16 +158,11 @@ serve(async (req) => {
       console.log(`[configure-workflow-credentials] Activating workflow in n8n`)
 
       const activateResponse = await fetch(
-        `${Deno.env.get('N8N_API_URL')}/workflows/${workflow.n8n_workflow_id}`,
+        `${n8nBaseUrl}/api/v1/workflows/${workflow.n8n_workflow_id}`,
         {
           method: 'PATCH',
-          headers: {
-            'X-N8N-API-KEY': Deno.env.get('N8N_API_KEY') ?? '',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            active: true
-          })
+          headers: n8nHeaders,
+          body: JSON.stringify({ active: true })
         }
       )
 

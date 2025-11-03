@@ -35,6 +35,20 @@ serve(async (req) => {
 
     console.log(`[provision-workflow-pack] Starting provisioning for org ${client_org_id}, pack: ${pack_level}`)
 
+    // Normaliser l'URL n8n
+    const N8N_API_URL = Deno.env.get('N8N_API_URL')
+    const N8N_API_KEY = Deno.env.get('N8N_API_KEY')
+
+    if (!N8N_API_URL || !N8N_API_KEY) {
+      throw new Error('N8N_API_URL or N8N_API_KEY not configured')
+    }
+
+    const n8nBaseUrl = N8N_API_URL.replace(/\/api\/v1\/?$/, '')
+    const n8nHeaders = {
+      'X-N8N-API-KEY': N8N_API_KEY,
+      'Content-Type': 'application/json'
+    }
+
     // Validate inputs
     if (!client_org_id) {
       throw new Error('client_org_id is required')
@@ -94,15 +108,38 @@ serve(async (req) => {
       try {
         console.log(`[provision-workflow-pack] Processing template: ${template.name}`)
 
-        // Dupliquer via n8n API
+        // Récupérer le template depuis n8n puis créer une copie
+        const getTemplateRes = await fetch(
+          `${n8nBaseUrl}/api/v1/workflows/${template.n8n_template_id}`,
+          { headers: n8nHeaders }
+        )
+
+        if (!getTemplateRes.ok) {
+          throw new Error(`Failed to fetch template: ${await getTemplateRes.text()}`)
+        }
+
+        const templateWorkflow = await getTemplateRes.json()
+
+        // Créer une copie avec le tag client
+        const newWorkflowData = {
+          ...templateWorkflow,
+          id: undefined,
+          name: `[${org.name}] ${template.name}`,
+          tags: [
+            { name: clientTag },
+            { name: `template-${template.id}` },
+            { name: `pack-${pack_level}` }
+          ],
+          active: false
+        }
+
+        // Créer le nouveau workflow
         const duplicateResponse = await fetch(
-          `${Deno.env.get('N8N_API_URL')}/workflows/${template.n8n_template_id}/duplicate`,
+          `${n8nBaseUrl}/api/v1/workflows`,
           {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${Deno.env.get('N8N_API_KEY') ?? ''}`,
-              'Content-Type': 'application/json'
-            }
+            headers: n8nHeaders,
+            body: JSON.stringify(newWorkflowData)
           }
         )
 
@@ -112,35 +149,7 @@ serve(async (req) => {
         }
 
         const newWorkflow = await duplicateResponse.json()
-        console.log(`[provision-workflow-pack] N8N workflow duplicated: ${newWorkflow.id}`)
-
-        // Renommer et configurer le workflow dans n8n
-        const updateResponse = await fetch(
-          `${Deno.env.get('N8N_API_URL')}/workflows/${newWorkflow.id}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Authorization': `Bearer ${Deno.env.get('N8N_API_KEY') ?? ''}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              name: `[${org.name}] ${template.name}`,
-              tags: [
-                { name: clientTag },
-                { name: `template-${template.id}` },
-                { name: `pack-${pack_level}` }
-              ],
-              active: false // Désactivé par défaut jusqu'à configuration
-            })
-          }
-        )
-
-        if (!updateResponse.ok) {
-          const errorText = await updateResponse.text()
-          throw new Error(`N8N update failed: ${errorText}`)
-        }
-
-        console.log(`[provision-workflow-pack] N8N workflow configured`)
+        console.log(`[provision-workflow-pack] N8N workflow created: ${newWorkflow.id}`)
 
         // Préparer le status des credentials
         const credentialsStatus: Record<string, string> = {}

@@ -1,0 +1,205 @@
+{
+  "name": "Hello World Test",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "hello-world-webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "hello-message",
+              "name": "message",
+              "value": "Hello World from n8n! 🚀",
+              "type": "string"
+            },
+            {
+              "id": "client-id",
+              "name": "client_id",
+              "value": "={{ $json.data.client_id || 'unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "triggered-at",
+              "name": "triggered_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "workflow-status",
+              "name": "status",
+              "value": "ok",
+              "type": "string"
+            },
+            {
+              "id": "items-processed",
+              "name": "itemsProcessed",
+              "value": 1,
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "set-data",
+      "name": "Set Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Hello World Workflow\n// Simple test workflow\n\nconst input = $input.all();\n\n// Log simple\nconsole.log('Hello World workflow executed!');\nconsole.log('Input data:', JSON.stringify(input, null, 2));\n\n// Retourner les données avec métriques\nreturn input.map(item => ({\n  ...item.json,\n  workflow_executed: true,\n  execution_time: new Date().toISOString(),\n  itemsProcessed: input.length,\n  status: 'ok'\n}));"
+      },
+      "id": "code-node",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://ijybwfdkiteebytdwhyu.supabase.co/functions/v1/track-workflow-execution",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqeWJ3ZmRraXRlZWJ5dGR3aHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTk4NDIsImV4cCI6MjA3MDI3NTg0Mn0.vGJD7mzEVpyxzgkLF1Tr4dXFUrRB2vwqH3mffM5TZqo"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "workflow_id",
+              "value": "={{ $json.env.WORKFLOW_ID }}"
+            },
+            {
+              "name": "n8n_execution_id",
+              "value": "={{ $execution.id }}"
+            },
+            {
+              "name": "status",
+              "value": "success"
+            },
+            {
+              "name": "started_at",
+              "value": "={{ $execution.startedAt }}"
+            },
+            {
+              "name": "finished_at",
+              "value": "={{ $execution.finishedAt || $now.toISO() }}"
+            },
+            {
+              "name": "duration_seconds",
+              "value": "={{ Math.round($execution.duration / 1000) }}"
+            },
+            {
+              "name": "input_data",
+              "value": "={{ $input.all() }}"
+            },
+            {
+              "name": "output_data",
+              "value": "={{ $json }}"
+            },
+            {
+              "name": "metrics",
+              "value": "={{ {\"itemsProcessed\": $json.itemsProcessed || 1, \"status\": \"ok\", \"message\": \"Hello World executed successfully\"} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "track-execution",
+      "name": "Track Execution",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 300],
+      "notes": "Envoie les métriques à Supabase"
+    },
+    {
+      "parameters": {
+        "mode": "lastNode"
+      },
+      "id": "respond-to-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Data": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Track Execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Track Execution": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-27T10:00:00.000Z",
+  "versionId": "1"
+}
+
+
+
+
+

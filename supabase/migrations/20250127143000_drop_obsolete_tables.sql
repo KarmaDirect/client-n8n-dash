@@ -80,3 +80,7 @@ COMMENT ON SCHEMA public IS 'Schéma principal - Architecture n8n pure (tables o
 
 
 
+
+
+
+

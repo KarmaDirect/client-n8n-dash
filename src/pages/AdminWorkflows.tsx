@@ -10,13 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Play, Pause, Trash2, FileText, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Play, Pause, Trash2, FileText, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface Organization {
   id: string;
   name: string;
-  n8n_folder_id?: string;
 }
 
 interface WorkflowTemplate {
@@ -25,8 +24,8 @@ interface WorkflowTemplate {
   description: string;
   n8n_template_id: string;
   pack_level: "start" | "pro" | "elite";
-  module_category: string;
-  required_variables: string[];
+  category: string;
+  required_credentials: string[];
   is_active: boolean;
 }
 
@@ -80,7 +79,7 @@ export default function AdminWorkflows() {
     try {
       const { data, error } = await supabase
         .from("organizations")
-        .select("id, name, n8n_folder_id")
+        .select("id, name")
         .eq("approved", true)
         .order("name");
 
@@ -121,7 +120,7 @@ export default function AdminWorkflows() {
       const { data, error } = await supabase
         .from("workflows")
         .select("*")
-        .eq("organization_id", orgId)
+        .eq("org_id", orgId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -139,16 +138,41 @@ export default function AdminWorkflows() {
 
   const loadMetrics = async (orgId: string) => {
     try {
-      const { data, error } = await supabase
+      // Calculer les métriques agrégées depuis workflow_metrics
+      const { data: metricsData, error } = await supabase
         .from("workflow_metrics")
-        .select("total_runs, total_items_processed, total_errors, estimated_roi")
-        .eq("organization_id", orgId)
-        .single();
+        .select("executions_count, success_count, failed_count, custom_metrics")
+        .eq("org_id", orgId);
 
       if (error && error.code !== "PGRST116") throw error;
-      setMetrics(data || { total_runs: 0, total_items_processed: 0, total_errors: 0, estimated_roi: 0 });
+      
+      // Agrégation des métriques
+      const aggregated = metricsData?.reduce((acc, m) => {
+        acc.total_runs += m.executions_count || 0;
+        acc.total_success += m.success_count || 0;
+        acc.total_errors += m.failed_count || 0;
+        
+        // Extraire itemsProcessed depuis custom_metrics si présent
+        if (m.custom_metrics && typeof m.custom_metrics === 'object') {
+          const items = (m.custom_metrics as any).itemsProcessed || 0;
+          acc.total_items_processed += items;
+        }
+        
+        return acc;
+      }, { total_runs: 0, total_success: 0, total_errors: 0, total_items_processed: 0 }) || { total_runs: 0, total_success: 0, total_errors: 0, total_items_processed: 0 };
+      
+      // ROI estimé basé sur time_saved (simplifié)
+      const estimated_roi = aggregated.total_runs * 10; // Placeholder
+      
+      setMetrics({
+        total_runs: aggregated.total_runs,
+        total_items_processed: aggregated.total_items_processed,
+        total_errors: aggregated.total_errors,
+        estimated_roi
+      });
     } catch (error: any) {
       console.error("Erreur métriques:", error.message);
+      setMetrics({ total_runs: 0, total_items_processed: 0, total_errors: 0, estimated_roi: 0 });
     }
   };
 
@@ -172,12 +196,15 @@ export default function AdminWorkflows() {
       return;
     }
 
-    // Collecter toutes les variables requises
+    // Collecter toutes les credentials/variables requises
     const allVariables = new Set<string>();
     templates
       .filter((t) => selectedTemplates.has(t.id))
       .forEach((t) => {
-        t.required_variables?.forEach((v: string) => allVariables.add(v));
+        // required_credentials est un JSONB array
+        if (t.required_credentials && Array.isArray(t.required_credentials)) {
+          t.required_credentials.forEach((v: string) => allVariables.add(v));
+        }
       });
 
     // Initialiser les variables avec des placeholders
@@ -282,15 +309,38 @@ export default function AdminWorkflows() {
     try {
       toast({
         title: "⏳ Test run lancé...",
-        description: "Vérifiez les logs n8n pour le résultat",
+        description: "Déclenchement du workflow en cours...",
       });
 
-      // Note: nécessite API n8n pour déclencher manuellement
-      // Pour l'instant, juste un placeholder
+      const { data, error } = await supabase.functions.invoke("manage-client-workflows", {
+        body: {
+          action: "trigger",
+          workflow_id: workflowId,
+          variables: {
+            test_mode: "true",
+            triggered_by: "admin_ui"
+          }
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Workflow déclenché",
+        description: `Exécution ID: ${data.execution_id || 'N/A'}`,
+      });
+
+      // Recharger les workflows et métriques après 3 secondes
+      setTimeout(() => {
+        if (selectedOrgId) {
+          loadClientWorkflows(selectedOrgId);
+          loadMetrics(selectedOrgId);
+        }
+      }, 3000);
     } catch (error: any) {
       toast({
-        title: "Erreur",
-        description: error.message,
+        title: "❌ Erreur",
+        description: error.message || "Impossible de déclencher le workflow",
         variant: "destructive",
       });
     }
@@ -333,13 +383,6 @@ export default function AdminWorkflows() {
                 </SelectContent>
               </Select>
             </div>
-            {selectedOrg && (
-              <div className="flex items-center gap-2">
-                <Badge variant={selectedOrg.n8n_folder_id ? "default" : "secondary"}>
-                  {selectedOrg.n8n_folder_id ? "Dossier n8n créé" : "Pas de dossier"}
-                </Badge>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -431,11 +474,11 @@ export default function AdminWorkflows() {
                             <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
                             <div className="flex items-center gap-2 mt-2">
                               <Badge variant="secondary" className="text-xs">
-                                {template.module_category}
+                                {template.category}
                               </Badge>
-                              {template.required_variables?.length > 0 && (
+                              {template.required_credentials?.length > 0 && (
                                 <span className="text-xs text-muted-foreground">
-                                  {template.required_variables.length} variables requises
+                                  {Array.isArray(template.required_credentials) ? template.required_credentials.length : 0} credentials requises
                                 </span>
                               )}
                             </div>
@@ -487,10 +530,30 @@ export default function AdminWorkflows() {
                   <TableBody>
                     {clientWorkflows.map((workflow) => (
                       <TableRow key={workflow.id}>
-                        <TableCell className="font-medium">{workflow.name}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <span>{workflow.name}</span>
+                            {workflow.n8n_workflow_id && (
+                              <a
+                                href={`https://primary-production-bdba.up.railway.app/workflow/${workflow.n8n_workflow_id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800"
+                                title="Voir dans n8n"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+                          {workflow.n8n_workflow_id && (
+                            <p className="text-xs text-muted-foreground font-mono mt-1">
+                              ID: {workflow.n8n_workflow_id}
+                            </p>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <Badge variant={workflow.is_active ? "default" : "secondary"}>
-                            {workflow.is_active ? "ON" : "OFF"}
+                            {workflow.is_active ? "🟢 ON" : "🔴 OFF"}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -521,8 +584,13 @@ export default function AdminWorkflows() {
                                 <Play className="w-4 h-4" />
                               )}
                             </Button>
-                            <Button size="sm" variant="ghost" onClick={() => testRun(workflow.id)}>
-                              <FileText className="w-4 h-4" />
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              onClick={() => testRun(workflow.id)}
+                              title="Tester l'exécution du workflow"
+                            >
+                              <Play className="w-4 h-4 text-blue-600" />
                             </Button>
                             <Button
                               size="sm"

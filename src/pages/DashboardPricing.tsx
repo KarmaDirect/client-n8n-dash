@@ -1,23 +1,42 @@
-import { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import { ButtonPremium } from "@/components/ui/button-premium";
-import { CardPremium, CardContent, CardHeader, CardTitle } from "@/components/ui/card-premium";
-import { DashboardNavbar } from "@/components/dashboard-navbar";
-import { Check, Star, Zap, Crown, ArrowRight, CreditCard, Calendar, Users, Shield } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ButtonPremium } from "@/components/ui/button-premium";
+import { CardPremium, CardContent as CardContentPremium, CardHeader as CardHeaderPremium, CardTitle as CardTitlePremium } from "@/components/ui/card-premium";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { toast } from "sonner";
+import { Check, ArrowRight, Zap, Crown, CreditCard } from "lucide-react";
 
-interface DashboardPricingProps {}
-
-export function DashboardPricing({}: DashboardPricingProps) {
-  const [isYearly, setIsYearly] = useState(false);
-  const [loading, setLoading] = useState<string | null>(null);
+const DashboardPricing = () => {
+  const { user } = useAuth();
+  const [pricingLoading, setPricingLoading] = useState<string | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
+  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    fetchSubscriptionStatus();
-  }, []);
+    if (user) {
+      fetchSubscriptionStatus();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) { setIsSubscribed(null); return; }
+    supabase
+      .from('subscribers')
+      .select('subscribed')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Subscription fetch error', error);
+          setIsSubscribed(null);
+        } else {
+          setIsSubscribed(Boolean(data?.subscribed));
+        }
+      });
+  }, [user]);
 
   const fetchSubscriptionStatus = async () => {
     try {
@@ -30,7 +49,7 @@ export function DashboardPricing({}: DashboardPricingProps) {
   };
 
   const handleCheckout = async (plan: "starter" | "pro", interval: "month" | "year") => {
-    setLoading(`${plan}-${interval}`);
+    setPricingLoading(`${plan}-${interval}`);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { plan, interval },
@@ -47,12 +66,12 @@ export function DashboardPricing({}: DashboardPricingProps) {
     } catch (error: any) {
       toast.error(error.message || "Erreur lors de la création du paiement");
     } finally {
-      setLoading(null);
+      setPricingLoading(null);
     }
   };
 
   const handlePortal = async () => {
-    setLoading("portal");
+    setPricingLoading("portal");
     try {
       const { data, error } = await supabase.functions.invoke("customer-portal");
       if (error) throw error;
@@ -66,7 +85,7 @@ export function DashboardPricing({}: DashboardPricingProps) {
     } catch (error: any) {
       toast.error(error.message || "Erreur d'accès au portail");
     } finally {
-      setLoading(null);
+      setPricingLoading(null);
     }
   };
 
@@ -118,284 +137,146 @@ export function DashboardPricing({}: DashboardPricingProps) {
     pro: Math.round(((297 * 12 - 2850) / (297 * 12)) * 100)
   };
 
-  const isCurrentPlan = (planId: string) => {
-    return subscriptionStatus?.subscription_tier === planId;
-  };
-
-  const isSubscribed = !!subscriptionStatus?.subscribed;
-
   return (
-    <>
-      <DashboardNavbar />
-      <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 pt-16">
-        <div className="container mx-auto px-4 py-fluid-2xl">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-fluid-2xl"
-          >
-            <h1 className="text-fluid-3xl sm:text-fluid-4xl font-display font-bold text-foreground mb-fluid-md">
-              Tarifs & Abonnement
-            </h1>
-            <p className="text-fluid-lg text-muted-foreground max-w-3xl mx-auto">
-              Gérez votre abonnement et choisissez le plan qui correspond à vos besoins.
-            </p>
-          </motion.div>
-
-          {/* Current Subscription Status */}
-          {isSubscribed && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="max-w-4xl mx-auto mb-fluid-xl"
-            >
-              <CardPremium className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <CreditCard className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">Abonnement Actif</CardTitle>
-                      <p className="text-muted-foreground">
-                        Plan {subscriptionStatus.subscription_tier} • 
-                        {subscriptionStatus.subscription_end && (
-                          <span> Renouvellement le {new Date(subscriptionStatus.subscription_end).toLocaleDateString()}</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <ButtonPremium
-                      onClick={handlePortal}
-                      disabled={loading === "portal"}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      {loading === "portal" ? "Chargement..." : "Gérer l'abonnement"}
-                    </ButtonPremium>
-                    <ButtonPremium
-                      onClick={fetchSubscriptionStatus}
-                      disabled={loading === "refresh"}
-                      variant="ghost"
-                    >
-                      Actualiser
-                    </ButtonPremium>
-                  </div>
-                </CardContent>
-              </CardPremium>
-            </motion.div>
-          )}
-
-          {/* Toggle Billing */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex items-center justify-center mb-fluid-xl"
-          >
-            <div className="bg-white rounded-2xl p-2 shadow-lg border border-border">
-              <div className="flex items-center space-x-2">
-                <span className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
-                  !isYearly ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:text-foreground"
-                )}>
-                  Mensuel
-                </span>
-                <button
-                  onClick={() => setIsYearly(!isYearly)}
-                  className="relative w-16 h-8 bg-muted rounded-full p-1 transition-all duration-300"
-                >
-                  <motion.div
-                    className="w-6 h-6 bg-white rounded-full shadow-md"
-                    animate={{ x: isYearly ? 32 : 0 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                </button>
-                <span className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
-                  isYearly ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:text-foreground"
-                )}>
-                  Annuel
-                  {isYearly && (
-                    <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                      Économisez jusqu'à 20%
-                    </span>
-                  )}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Pricing Cards */}
-          <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto mb-fluid-2xl">
-            {plans.map((plan, index) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
-                className="relative"
-              >
-                {plan.popular && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.5 }}
-                    className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10"
-                  >
-                    <div className="bg-gradient-to-r from-primary to-accent text-white px-6 py-2 rounded-full text-sm font-medium shadow-lg flex items-center gap-2">
-                      <Star className="w-4 h-4" />
-                      Plus Populaire
-                    </div>
-                  </motion.div>
-                )}
-
-                <CardPremium className={cn(
-                  "h-full transition-all duration-300",
-                  plan.popular && "ring-2 ring-primary/20 shadow-xl",
-                  isCurrentPlan(plan.planId) && "ring-2 ring-green-500/50 bg-green-50/30"
-                )}>
-                  <CardHeader className="text-center pb-6">
-                    <div className="flex justify-center mb-4">
-                      <div className={cn(
-                        "w-16 h-16 rounded-2xl flex items-center justify-center",
-                        plan.popular ? "bg-gradient-to-br from-primary to-accent" : "bg-primary/10"
-                      )}>
-                        <plan.icon className={cn(
-                          "w-8 h-8",
-                          plan.popular ? "text-white" : "text-primary"
-                        )} />
-                      </div>
-                    </div>
-                    
-                    <CardTitle className="text-fluid-2xl font-display font-bold">
-                      {plan.name}
-                    </CardTitle>
-                    
-                    <p className="text-muted-foreground">
-                      {plan.description}
-                    </p>
-
-                    {isCurrentPlan(plan.planId) && (
-                      <div className="mt-3 inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-                        <Check className="w-4 h-4" />
-                        Plan actuel
-                      </div>
-                    )}
-
-                    <div className="mt-6">
-                      <div className="flex items-baseline justify-center gap-2">
-                        <span className="text-fluid-4xl font-display font-bold text-foreground">
-                          {isYearly ? plan.price.yearly : plan.price.monthly}€
-                        </span>
-                        <span className="text-muted-foreground">
-                          /{isYearly ? "an" : "mois"}
-                        </span>
-                      </div>
-                      
-                      {isYearly && (
-                        <div className="mt-2">
-                          <span className="text-sm text-muted-foreground line-through">
-                            {plan.price.monthly * 12}€/an
-                          </span>
-                          <span className="ml-2 text-sm font-medium text-green-600">
-                            Économisez {plan.name === "Starter" ? savings.starter : savings.pro}%
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-6">
-                    <ul className="space-y-3">
-                      {plan.features.map((feature, featureIndex) => (
-                        <motion.li
-                          key={feature}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: 0.4 + featureIndex * 0.1 }}
-                          className="flex items-start gap-3"
-                        >
-                          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <Check className="w-3 h-3 text-green-600" />
-                          </div>
-                          <span className="text-muted-foreground">{feature}</span>
-                        </motion.li>
-                      ))}
-                    </ul>
-
-                    <div className="pt-4">
-                      {isCurrentPlan(plan.planId) ? (
-                        <ButtonPremium
-                          size="lg"
-                          variant="outline"
-                          className="w-full"
-                          disabled
-                        >
-                          Plan actuel
-                        </ButtonPremium>
-                      ) : (
-                        <ButtonPremium
-                          size="lg"
-                          className={cn(
-                            "w-full group",
-                            plan.popular && "bg-gradient-to-r from-primary to-accent hover:from-primary-darker hover:to-accent-darker"
-                          )}
-                          onClick={() => handleCheckout(plan.planId as "starter" | "pro", isYearly ? "year" : "month")}
-                          disabled={loading === `${plan.planId}-${isYearly ? "year" : "month"}`}
-                        >
-                          {loading === `${plan.planId}-${isYearly ? "year" : "month"}` ? (
-                            "Redirection vers Stripe..."
-                          ) : (
-                            <>
-                              {isSubscribed ? "Changer de plan" : "Commencer l'essai gratuit"}
-                              <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
-                            </>
-                          )}
-                        </ButtonPremium>
-                      )}
-                    </div>
-                  </CardContent>
-                </CardPremium>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Additional Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="text-center"
-          >
-            <div className="bg-white rounded-2xl p-8 shadow-lg border border-border max-w-4xl mx-auto">
-              <h3 className="text-fluid-xl font-display font-semibold mb-4">
-                Questions sur nos tarifs ?
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                Notre équipe est là pour vous aider à choisir le bon plan pour votre entreprise.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <ButtonPremium variant="outline" size="lg">
-                  Contacter l'équipe
-                </ButtonPremium>
-                <ButtonPremium size="lg" className="group">
-                  Voir la documentation
-                  <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
-                </ButtonPremium>
-              </div>
-            </div>
-          </motion.div>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Abonnement</h1>
+          <p className="text-muted-foreground">
+            Choisissez le plan qui correspond à vos besoins
+          </p>
         </div>
-      </main>
-    </>
+
+        {isSubscribed === false && (
+          <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <h3 className="font-semibold text-lg">Abonnement requis</h3>
+                  <p className="text-sm text-muted-foreground">Activez votre abonnement pour lancer vos automations.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Plans */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl">
+          {plans.map((plan) => (
+            <CardPremium key={plan.name} className="relative overflow-hidden">
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+                    ⭐ Plan le plus populaire
+                  </div>
+                </div>
+              )}
+              
+              <CardHeaderPremium className="text-center pb-6">
+                <div className="flex justify-center mb-4">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                    <plan.icon className="w-8 h-8 text-primary" />
+                  </div>
+                </div>
+                <CardTitlePremium className="text-2xl font-bold mb-2">
+                  {plan.name}
+                </CardTitlePremium>
+                <p className="text-muted-foreground">{plan.description}</p>
+              </CardHeaderPremium>
+              
+              <CardContentPremium className="space-y-6">
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <span className="text-4xl font-bold">
+                      {plan.price.monthly}€
+                    </span>
+                    <span className="text-muted-foreground">/mois</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    ou {plan.price.yearly}€/an (économisez {savings[plan.planId as keyof typeof savings]}%)
+                  </p>
+                </div>
+
+                <ul className="space-y-3">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3 h-3 text-primary" />
+                      </div>
+                      <span className="text-sm">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="space-y-3">
+                  <ButtonPremium
+                    onClick={() => handleCheckout(plan.planId as "starter" | "pro", "month")}
+                    disabled={pricingLoading === `${plan.planId}-month`}
+                    className="w-full"
+                  >
+                    {pricingLoading === `${plan.planId}-month` ? (
+                      "Chargement..."
+                    ) : (
+                      <>
+                        Commencer l'essai gratuit
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    )}
+                  </ButtonPremium>
+                  
+                  <ButtonPremium
+                    variant="outline"
+                    onClick={() => handleCheckout(plan.planId as "starter" | "pro", "year")}
+                    disabled={pricingLoading === `${plan.planId}-year`}
+                    className="w-full"
+                  >
+                    {pricingLoading === `${plan.planId}-year` ? (
+                      "Chargement..."
+                    ) : (
+                      <>
+                        Annuel - {plan.price.yearly}€
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    )}
+                  </ButtonPremium>
+                </div>
+              </CardContentPremium>
+            </CardPremium>
+          ))}
+        </div>
+
+        {/* Gestion de l'abonnement existant */}
+        {subscriptionStatus && (
+          <CardPremium className="max-w-2xl mx-auto">
+            <CardHeaderPremium className="text-center">
+              <CardTitlePremium className="text-xl font-bold mb-2">
+                Gérer votre abonnement
+              </CardTitlePremium>
+              <p className="text-muted-foreground">
+                Accédez à votre portail client pour modifier votre plan ou annuler votre abonnement.
+              </p>
+            </CardHeaderPremium>
+            <CardContentPremium>
+              <ButtonPremium
+                onClick={handlePortal}
+                disabled={pricingLoading === "portal"}
+                className="w-full"
+              >
+                {pricingLoading === "portal" ? (
+                  "Chargement..."
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Accéder au portail client
+                  </>
+                )}
+              </ButtonPremium>
+            </CardContentPremium>
+          </CardPremium>
+        )}
+      </div>
+    </DashboardLayout>
   );
-}
+};
 
 export default DashboardPricing;

@@ -61,3 +61,7 @@ Le RLS vérifie que l''utilisateur a le rôle "admin" dans user_roles.';
 
 
 
+
+
+
+

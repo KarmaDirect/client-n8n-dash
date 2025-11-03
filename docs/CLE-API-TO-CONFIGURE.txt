@@ -1,0 +1,20 @@
+CLÉ API N8N À CONFIGURER DANS SUPABASE
+
+Cette clé a été testée et fonctionne correctement (HTTP 200 + JSON).
+
+Variable: N8N_API_KEY
+Valeur: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5YTg2Y2Q4ZC1jMTU2LTQxMTktOThlNy0wNDhkOTkyMjI5NjAiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzYxNzgyMTgwfQ.YdeKdFxqGDqo7gA2qxYNsTEMLrDm-0whk4UY0czeEMk
+
+OÙ LA CONFIGURER:
+1. https://supabase.com/dashboard/project/ijybwfdkiteebytdwhyu/functions
+2. Cliquer sur "manage-client-workflows"
+3. Settings → Environment variables
+4. Modifier ou créer N8N_API_KEY avec la valeur ci-dessus
+5. REDÉPLOYER la fonction (obligatoire!)
+
+VÉRIFIER AUSSI:
+- N8N_API_URL = https://primary-production-bdba.up.railway.app (sans /api/v1)
+
+
+
+
