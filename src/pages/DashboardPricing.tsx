@@ -7,48 +7,41 @@ import { ButtonPremium } from "@/components/ui/button-premium";
 import { CardPremium, CardContent as CardContentPremium, CardHeader as CardHeaderPremium, CardTitle as CardTitlePremium } from "@/components/ui/card-premium";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { toast } from "sonner";
-import { Check, ArrowRight, Zap, Crown, CreditCard, Calendar, CheckCircle2, XCircle } from "lucide-react";
+import { Check, ArrowRight, Zap, Crown, CreditCard, Calendar, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const DashboardPricing = () => {
   const { user } = useAuth();
   const [pricingLoading, setPricingLoading] = useState<string | null>(null);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [subscriptionDetails, setSubscriptionDetails] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      fetchSubscriptionStatus();
-    }
+    if (!user) return;
+    fetchSubscription();
   }, [user]);
 
-  useEffect(() => {
-    if (!user) { setIsSubscribed(null); return; }
-    supabase
-      .from('subscribers')
-      .select('subscribed, subscription_tier, subscription_end, stripe_customer_id, created_at')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (error) {
-          console.error('Subscription fetch error', error);
-          setIsSubscribed(null);
-        } else {
-          setIsSubscribed(Boolean(data?.subscribed));
-          setSubscriptionDetails(data);
-        }
-      });
-  }, [user]);
-
-  const fetchSubscriptionStatus = async () => {
+  const fetchSubscription = async () => {
+    setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
+      const { data, error } = await supabase
+        .from('subscribers')
+        .select('subscribed, subscription_tier, subscription_end, stripe_customer_id, created_at')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+
       if (error) throw error;
-      setSubscriptionStatus(data || {});
-    } catch (error) {
-      console.error("Erreur lors de la récupération du statut:", error);
+      
+      setIsSubscribed(Boolean(data?.subscribed));
+      setSubscriptionDetails(data);
+    } catch (error: any) {
+      console.error('Subscription fetch error', error);
+      setIsSubscribed(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -141,6 +134,8 @@ const DashboardPricing = () => {
     pro: Math.round(((297 * 12 - 2850) / (297 * 12)) * 100)
   };
 
+  const currentPlan = subscriptionDetails?.subscription_tier?.toLowerCase();
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -152,59 +147,65 @@ const DashboardPricing = () => {
         </div>
 
         {/* Statut d'abonnement actuel */}
-        {subscriptionDetails && (
-          <CardPremium className="max-w-2xl mx-auto border-primary/20">
-            <CardHeaderPremium>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitlePremium className="text-xl font-bold mb-2 flex items-center gap-2">
-                    {isSubscribed ? (
-                      <>
-                        <CheckCircle2 className="w-5 h-5 text-green-500" />
-                        Abonnement actif
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="w-5 h-5 text-orange-500" />
-                        Aucun abonnement actif
-                      </>
-                    )}
-                  </CardTitlePremium>
+        {loading ? (
+          <Card>
+            <CardContent className="py-8">
+              <div className="flex items-center justify-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                <span className="text-muted-foreground">Chargement de votre abonnement...</span>
+              </div>
+            </CardContent>
+          </Card>
+        ) : subscriptionDetails && isSubscribed ? (
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    <CardTitle className="text-xl font-bold">Abonnement actif</CardTitle>
+                  </div>
                   {subscriptionDetails.subscription_tier && (
-                    <Badge variant="outline" className="mt-2">
+                    <Badge variant="default" className="mt-2">
                       Plan {subscriptionDetails.subscription_tier.charAt(0).toUpperCase() + subscriptionDetails.subscription_tier.slice(1)}
                     </Badge>
                   )}
                 </div>
               </div>
-            </CardHeaderPremium>
-            <CardContentPremium className="space-y-4">
-              {subscriptionDetails.subscription_end && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Prochain renouvellement :</span>
-                  <span className="font-medium">
-                    {new Date(subscriptionDetails.subscription_end).toLocaleDateString('fr-FR', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </span>
-                </div>
-              )}
-              {subscriptionDetails.created_at && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Membre depuis :</span>
-                  <span className="font-medium">
-                    {new Date(subscriptionDetails.created_at).toLocaleDateString('fr-FR', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </span>
-                </div>
-              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                {subscriptionDetails.subscription_end && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <span className="text-muted-foreground">Prochain renouvellement :</span>
+                      <span className="font-medium ml-2">
+                        {new Date(subscriptionDetails.subscription_end).toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {subscriptionDetails.created_at && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <span className="text-muted-foreground">Membre depuis :</span>
+                      <span className="font-medium ml-2">
+                        {new Date(subscriptionDetails.created_at).toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
               <Separator />
               <ButtonPremium
                 onClick={handlePortal}
@@ -212,7 +213,10 @@ const DashboardPricing = () => {
                 className="w-full"
               >
                 {pricingLoading === "portal" ? (
-                  "Chargement..."
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Chargement...
+                  </>
                 ) : (
                   <>
                     <CreditCard className="w-4 h-4 mr-2" />
@@ -220,137 +224,155 @@ const DashboardPricing = () => {
                   </>
                 )}
               </ButtonPremium>
-            </CardContentPremium>
-          </CardPremium>
-        )}
-
-        {isSubscribed === false && (
-          <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                  <h3 className="font-semibold text-lg">Abonnement requis</h3>
-                  <p className="text-sm text-muted-foreground">Activez votre abonnement pour lancer vos automations.</p>
-                </div>
-              </div>
             </CardContent>
           </Card>
+        ) : (
+          <Alert className="border-amber-200 bg-amber-50">
+            <XCircle className="h-4 w-4 text-amber-600" />
+            <AlertTitle className="text-amber-900">Abonnement requis</AlertTitle>
+            <AlertDescription className="text-amber-800">
+              Activez votre abonnement pour lancer vos automations et accéder à toutes les fonctionnalités.
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Plans */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl">
-          {plans.map((plan) => (
-            <CardPremium key={plan.name} className="relative overflow-hidden">
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
-                    ⭐ Plan le plus populaire
-                  </div>
-                </div>
-              )}
-              
-              <CardHeaderPremium className="text-center pb-6">
-                <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-                    <plan.icon className="w-8 h-8 text-primary" />
-                  </div>
-                </div>
-                <CardTitlePremium className="text-2xl font-bold mb-2">
-                  {plan.name}
-                </CardTitlePremium>
-                <p className="text-muted-foreground">{plan.description}</p>
-              </CardHeaderPremium>
-              
-              <CardContentPremium className="space-y-6">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-4xl font-bold">
-                      {plan.price.monthly}€
-                    </span>
-                    <span className="text-muted-foreground">/mois</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    ou {plan.price.yearly}€/an (économisez {savings[plan.planId as keyof typeof savings]}%)
-                  </p>
-                </div>
-
-                <ul className="space-y-3">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3 h-3 text-primary" />
-                      </div>
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="space-y-3">
-                  <ButtonPremium
-                    onClick={() => handleCheckout(plan.planId as "starter" | "pro", "month")}
-                    disabled={pricingLoading === `${plan.planId}-month`}
-                    className="w-full"
-                  >
-                    {pricingLoading === `${plan.planId}-month` ? (
-                      "Chargement..."
-                    ) : (
-                      <>
-                        Commencer l'essai gratuit
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    )}
-                  </ButtonPremium>
-                  
-                  <ButtonPremium
-                    variant="outline"
-                    onClick={() => handleCheckout(plan.planId as "starter" | "pro", "year")}
-                    disabled={pricingLoading === `${plan.planId}-year`}
-                    className="w-full"
-                  >
-                    {pricingLoading === `${plan.planId}-year` ? (
-                      "Chargement..."
-                    ) : (
-                      <>
-                        Annuel - {plan.price.yearly}€
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    )}
-                  </ButtonPremium>
-                </div>
-              </CardContentPremium>
-            </CardPremium>
-          ))}
-        </div>
-
-        {/* Gestion de l'abonnement existant */}
-        {subscriptionStatus && (
-          <CardPremium className="max-w-2xl mx-auto">
-            <CardHeaderPremium className="text-center">
-              <CardTitlePremium className="text-xl font-bold mb-2">
-                Gérer votre abonnement
-              </CardTitlePremium>
-              <p className="text-muted-foreground">
-                Accédez à votre portail client pour modifier votre plan ou annuler votre abonnement.
-              </p>
-            </CardHeaderPremium>
-            <CardContentPremium>
-              <ButtonPremium
-                onClick={handlePortal}
-                disabled={pricingLoading === "portal"}
-                className="w-full"
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+          {plans.map((plan) => {
+            const isCurrentPlan = currentPlan === plan.planId;
+            return (
+              <CardPremium 
+                key={plan.name} 
+                className={`relative overflow-hidden transition-all duration-300 ${
+                  isCurrentPlan ? 'ring-2 ring-primary shadow-lg' : ''
+                } ${plan.popular ? 'lg:scale-105' : ''}`}
               >
-                {pricingLoading === "portal" ? (
-                  "Chargement..."
-                ) : (
-                  <>
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Accéder au portail client
-                  </>
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+                    <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg">
+                      ⭐ Plan le plus populaire
+                    </div>
+                  </div>
                 )}
-              </ButtonPremium>
-            </CardContentPremium>
-          </CardPremium>
-        )}
+                
+                {isCurrentPlan && (
+                  <div className="absolute top-4 right-4 z-10">
+                    <Badge variant="default" className="bg-green-500">
+                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      Actuel
+                    </Badge>
+                  </div>
+                )}
+                
+                <CardHeaderPremium className="text-center pb-6 pt-8">
+                  <div className="flex justify-center mb-4">
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center ${
+                      plan.popular ? 'scale-110' : ''
+                    }`}>
+                      <plan.icon className={`w-8 h-8 text-primary ${plan.popular ? 'scale-110' : ''}`} />
+                    </div>
+                  </div>
+                  <CardTitlePremium className="text-2xl font-bold mb-2">
+                    {plan.name}
+                  </CardTitlePremium>
+                  <p className="text-muted-foreground text-sm">{plan.description}</p>
+                </CardHeaderPremium>
+                
+                <CardContentPremium className="space-y-6">
+                  <div className="text-center">
+                    <div className="flex items-baseline justify-center gap-2 mb-2">
+                      <span className="text-4xl font-bold">
+                        {plan.price.monthly}€
+                      </span>
+                      <span className="text-muted-foreground text-lg">/mois</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      ou <span className="font-semibold">{plan.price.yearly}€/an</span> 
+                      <span className="text-green-600 font-medium ml-1">(économisez {savings[plan.planId as keyof typeof savings]}%)</span>
+                    </p>
+                  </div>
+
+                  <Separator />
+
+                  <ul className="space-y-3">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check className="w-3 h-3 text-primary" />
+                        </div>
+                        <span className="text-sm text-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Separator />
+
+                  <div className="space-y-3">
+                    {isCurrentPlan ? (
+                      <ButtonPremium
+                        onClick={handlePortal}
+                        disabled={pricingLoading === "portal"}
+                        className="w-full"
+                        variant="outline"
+                      >
+                        {pricingLoading === "portal" ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Chargement...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Gérer mon abonnement
+                          </>
+                        )}
+                      </ButtonPremium>
+                    ) : (
+                      <>
+                        <ButtonPremium
+                          onClick={() => handleCheckout(plan.planId as "starter" | "pro", "month")}
+                          disabled={pricingLoading === `${plan.planId}-month` || !!pricingLoading}
+                          className="w-full"
+                        >
+                          {pricingLoading === `${plan.planId}-month` ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Chargement...
+                            </>
+                          ) : (
+                            <>
+                              Commencer l'essai gratuit
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </>
+                          )}
+                        </ButtonPremium>
+                        
+                        <ButtonPremium
+                          variant="outline"
+                          onClick={() => handleCheckout(plan.planId as "starter" | "pro", "year")}
+                          disabled={pricingLoading === `${plan.planId}-year` || !!pricingLoading}
+                          className="w-full"
+                        >
+                          {pricingLoading === `${plan.planId}-year` ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Chargement...
+                            </>
+                          ) : (
+                            <>
+                              Annuel - {plan.price.yearly}€
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </>
+                          )}
+                        </ButtonPremium>
+                      </>
+                    )}
+                  </div>
+                </CardContentPremium>
+              </CardPremium>
+            );
+          })}
+        </div>
       </div>
     </DashboardLayout>
   );
