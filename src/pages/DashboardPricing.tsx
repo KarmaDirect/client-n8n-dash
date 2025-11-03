@@ -245,16 +245,8 @@ const DashboardPricing = () => {
                 key={plan.name} 
                 className={`relative overflow-hidden transition-all duration-300 ${
                   isCurrentPlan ? 'ring-2 ring-primary shadow-lg' : ''
-                } ${plan.popular ? 'lg:scale-105' : ''}`}
+                }`}
               >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
-                    <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg">
-                      ⭐ Plan le plus populaire
-                    </div>
-                  </div>
-                )}
-                
                 {isCurrentPlan && (
                   <div className="absolute top-4 right-4 z-10">
                     <Badge variant="default" className="bg-green-500">
@@ -266,10 +258,8 @@ const DashboardPricing = () => {
                 
                 <CardHeaderPremium className="text-center pb-6 pt-8">
                   <div className="flex justify-center mb-4">
-                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center ${
-                      plan.popular ? 'scale-110' : ''
-                    }`}>
-                      <plan.icon className={`w-8 h-8 text-primary ${plan.popular ? 'scale-110' : ''}`} />
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                      <plan.icon className="w-8 h-8 text-primary" />
                     </div>
                   </div>
                   <CardTitlePremium className="text-2xl font-bold mb-2">
