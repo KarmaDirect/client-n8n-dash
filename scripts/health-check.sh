@@ -96,10 +96,10 @@ echo "🔐 Vérification des fichiers sensibles..."
 echo ""
 
 # Vérifier qu'il n'y a pas de fichiers sensibles commités
-if git ls-files | grep -q "\.env"; then
+if git ls-files 2>/dev/null | grep -q "\.env"; then
     warn "Fichiers .env détectés dans git (ne devraient pas être commités)"
 else
-    check "Aucun fichier .env sensible dans git (bonne pratique)"
+    echo -e "${GREEN}✅${NC} Aucun fichier .env sensible dans git (bonne pratique)"
 fi
 
 echo ""
