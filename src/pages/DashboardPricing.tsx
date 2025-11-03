@@ -7,13 +7,16 @@ import { ButtonPremium } from "@/components/ui/button-premium";
 import { CardPremium, CardContent as CardContentPremium, CardHeader as CardHeaderPremium, CardTitle as CardTitlePremium } from "@/components/ui/card-premium";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { toast } from "sonner";
-import { Check, ArrowRight, Zap, Crown, CreditCard } from "lucide-react";
+import { Check, ArrowRight, Zap, Crown, CreditCard, Calendar, CheckCircle2, XCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const DashboardPricing = () => {
   const { user } = useAuth();
   const [pricingLoading, setPricingLoading] = useState<string | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
+  const [subscriptionDetails, setSubscriptionDetails] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
@@ -25,7 +28,7 @@ const DashboardPricing = () => {
     if (!user) { setIsSubscribed(null); return; }
     supabase
       .from('subscribers')
-      .select('subscribed')
+      .select('subscribed, subscription_tier, subscription_end, stripe_customer_id, created_at')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data, error }) => {
@@ -34,6 +37,7 @@ const DashboardPricing = () => {
           setIsSubscribed(null);
         } else {
           setIsSubscribed(Boolean(data?.subscribed));
+          setSubscriptionDetails(data);
         }
       });
   }, [user]);
@@ -146,6 +150,79 @@ const DashboardPricing = () => {
             Choisissez le plan qui correspond à vos besoins
           </p>
         </div>
+
+        {/* Statut d'abonnement actuel */}
+        {subscriptionDetails && (
+          <CardPremium className="max-w-2xl mx-auto border-primary/20">
+            <CardHeaderPremium>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitlePremium className="text-xl font-bold mb-2 flex items-center gap-2">
+                    {isSubscribed ? (
+                      <>
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                        Abonnement actif
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-5 h-5 text-orange-500" />
+                        Aucun abonnement actif
+                      </>
+                    )}
+                  </CardTitlePremium>
+                  {subscriptionDetails.subscription_tier && (
+                    <Badge variant="outline" className="mt-2">
+                      Plan {subscriptionDetails.subscription_tier.charAt(0).toUpperCase() + subscriptionDetails.subscription_tier.slice(1)}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </CardHeaderPremium>
+            <CardContentPremium className="space-y-4">
+              {subscriptionDetails.subscription_end && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Prochain renouvellement :</span>
+                  <span className="font-medium">
+                    {new Date(subscriptionDetails.subscription_end).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </span>
+                </div>
+              )}
+              {subscriptionDetails.created_at && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Membre depuis :</span>
+                  <span className="font-medium">
+                    {new Date(subscriptionDetails.created_at).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </span>
+                </div>
+              )}
+              <Separator />
+              <ButtonPremium
+                onClick={handlePortal}
+                disabled={pricingLoading === "portal"}
+                className="w-full"
+              >
+                {pricingLoading === "portal" ? (
+                  "Chargement..."
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Gérer mon abonnement
+                  </>
+                )}
+              </ButtonPremium>
+            </CardContentPremium>
+          </CardPremium>
+        )}
 
         {isSubscribed === false && (
           <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20">

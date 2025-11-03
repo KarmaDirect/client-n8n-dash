@@ -3,16 +3,14 @@ import { SupportSection } from "@/components/dashboard/SupportSection";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageSquare, Bot } from "lucide-react";
+import { MessageSquare, Bot, Calendar, Mail, BookOpen, HelpCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 const DashboardSupport = () => {
   const { user } = useAuth();
   const [orgId, setOrgId] = useState<string | undefined>(undefined);
-  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
-  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -34,24 +32,6 @@ const DashboardSupport = () => {
     }
   }, [user]);
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
-    
-    const messageContent = inputValue;
-    const userMessage = { role: "user" as const, content: messageContent };
-    setMessages((prev) => [...prev, userMessage]);
-    setInputValue("");
-
-    // Simuler une réponse IA (à remplacer par une vraie API)
-    setTimeout(() => {
-      const aiMessage = {
-        role: "assistant" as const,
-        content: `Merci pour votre message : "${messageContent}". Je suis là pour vous aider avec vos automations n8n. Comment puis-je vous assister aujourd'hui ?`,
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-    }, 1000);
-  };
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -62,62 +42,114 @@ const DashboardSupport = () => {
           </p>
         </div>
 
+        {/* Quick Actions */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg">Prendre RDV</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Planifiez un appel avec un expert pour discuter de vos besoins
+              </p>
+              <Button asChild className="w-full">
+                <a href="https://calendly.com/hatim-moro-2002/30min" target="_blank" rel="noreferrer">
+                  Réserver un créneau
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Mail className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg">Email Support</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Envoyez-nous un email pour toute question technique
+              </p>
+              <Button asChild variant="outline" className="w-full">
+                <a href="mailto:support@webstate.com">
+                  Contacter par email
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg">Documentation</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Consultez notre documentation complète
+              </p>
+              <Button asChild variant="outline" className="w-full">
+                <a href="/docs" target="_blank">
+                  Voir la documentation
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Chat Support */}
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Chatbot IA */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bot className="w-5 h-5 text-primary" />
-                Chat Support IA
+                Chat Support
               </CardTitle>
               <CardDescription>
-                Obtenez des réponses instantanées à vos questions
+                Échangez avec notre équipe de support
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="h-64 border rounded-lg p-4 overflow-y-auto bg-muted/30 space-y-4">
-                {messages.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-muted-foreground text-center">
-                    <div>
-                      <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>Démarrez une conversation</p>
-                    </div>
-                  </div>
-                ) : (
-                  messages.map((msg, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-lg p-3 ${
-                          msg.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
-                        }`}
-                      >
-                        <p className="text-sm">{msg.content}</p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  placeholder="Tapez votre question..."
-                />
-                <Button onClick={handleSendMessage}>Envoyer</Button>
-              </div>
+            <CardContent>
+              <SupportSection orgId={orgId} calendlyUrl="https://calendly.com/hatim-moro-2002/30min" />
             </CardContent>
           </Card>
 
-          {/* Support Section existante */}
-          <div>
-            <SupportSection orgId={orgId} calendlyUrl="https://calendly.com/hatim-moro-2002/30min" />
-          </div>
+          {/* FAQ Quick */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-primary" />
+                Questions fréquentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="p-3 border rounded-lg">
+                  <h4 className="font-semibold text-sm mb-1">Comment démarrer un workflow ?</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Allez dans Automations, sélectionnez un workflow et cliquez sur "Activer"
+                  </p>
+                </div>
+                <div className="p-3 border rounded-lg">
+                  <h4 className="font-semibold text-sm mb-1">Comment configurer mes credentials ?</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Dans la page d'un workflow, cliquez sur "Configurer" pour ajouter vos clés API
+                  </p>
+                </div>
+                <div className="p-3 border rounded-lg">
+                  <h4 className="font-semibold text-sm mb-1">Comment annuler mon abonnement ?</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Accédez au portail client depuis la page Abonnement
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </DashboardLayout>

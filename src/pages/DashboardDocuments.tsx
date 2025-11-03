@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { FileText, Image, Video, File, Download, Eye, Trash2, Filter, Search } from "lucide-react";
+import { FileText, Image, Video, File, Download, Eye, Trash2, Filter, Search, Upload, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -15,6 +15,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { useDebouncedValue } from "@/hooks/useDebounce";
 
 interface Document {
   id: string;
@@ -35,8 +38,11 @@ const DashboardDocuments = () => {
   const [orgId, setOrgId] = useState<string | undefined>(undefined);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const [filterType, setFilterType] = useState<string>("all");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -262,9 +268,9 @@ const DashboardDocuments = () => {
   };
 
   const filteredDocuments = documents.filter((doc) => {
-    const matchesSearch = searchQuery === "" || 
-      doc.file_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.workflow_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = debouncedSearchQuery === "" || 
+      doc.file_name?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+      doc.workflow_name?.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
     
     const matchesType = filterType === "all" || 
       doc.doc_type?.toLowerCase() === filterType.toLowerCase() ||
@@ -274,6 +280,51 @@ const DashboardDocuments = () => {
 
     return matchesSearch && matchesType;
   });
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0 || !orgId) return;
+
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const filePath = `${orgId}/${Date.now()}_${file.name}`;
+        
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+          .from('documents')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // Determine doc type from mime type
+        let docType = 'document';
+        if (file.type.startsWith('image/')) docType = 'image';
+        else if (file.type.startsWith('video/')) docType = 'video';
+        else if (file.type.includes('pdf')) docType = 'pdf';
+
+        // Create document record
+        const { error: dbError } = await supabase
+          .from('documents')
+          .insert({
+            org_id: orgId,
+            doc_type: docType,
+            file_path: filePath,
+          });
+
+        if (dbError) throw dbError;
+      }
+
+      toast.success(`${files.length} fichier(s) uploadé(s) avec succès`);
+      fetchDocuments();
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (error: any) {
+      console.error("Error uploading file:", error);
+      toast.error(`Erreur lors de l'upload: ${error.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const documentTypes = [
     { value: "all", label: "Tous les types" },
@@ -320,29 +371,63 @@ const DashboardDocuments = () => {
                   ))}
                 </SelectContent>
               </Select>
+              <Button 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || !orgId}
+                className="w-full sm:w-auto"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Upload...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Uploader
+                  </>
+                )}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={handleFileUpload}
+              />
             </div>
           </CardContent>
         </Card>
 
         {/* Liste des documents */}
         {loading ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground">Chargement des documents...</p>
-            </CardContent>
-          </Card>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32 mb-2" />
+                  <Skeleton className="h-4 w-24" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         ) : filteredDocuments.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center">
-              <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground mb-2">
-                {searchQuery || filterType !== "all" 
+            <CardContent className="py-12">
+              <EmptyState
+                icon={FileText}
+                title={searchQuery || filterType !== "all" ? "Aucun document trouvé" : "Aucun document exporté"}
+                description={searchQuery || filterType !== "all" 
                   ? "Aucun document ne correspond à votre recherche" 
-                  : "Aucun document exporté pour le moment"}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Les documents générés par vos workflows apparaîtront ici
-              </p>
+                  : "Les documents générés par vos workflows apparaîtront ici"}
+                action={!searchQuery && filterType === "all" ? {
+                  label: "Uploader un document",
+                  onClick: () => fileInputRef.current?.click()
+                } : undefined}
+              />
             </CardContent>
           </Card>
         ) : (
