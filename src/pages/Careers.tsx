@@ -12,7 +12,6 @@ import {
   ArrowRight,
   Briefcase
 } from "lucide-react";
-import { CTASection } from "@/components/cta-section";
 import { typography } from "@/lib/constants/design-tokens";
 import { cn } from "@/lib/utils";
 
@@ -161,7 +160,6 @@ const Careers = () => {
           </div>
         </section>
 
-        <CTASection />
       </main>
       <Footer />
     </>

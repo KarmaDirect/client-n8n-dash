@@ -6,7 +6,6 @@ import { ButtonPremium } from "@/components/ui/button-premium";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { CheckCircle, Zap, Shield, Users, Clock, Bot, BarChart3, MessageSquare, Mail, Calendar, ArrowRight, Play } from "lucide-react";
 import { Link } from "react-router-dom";
-import { CTASection } from "@/components/cta-section";
 import { typography } from "@/lib/constants/design-tokens";
 import { cn } from "@/lib/utils";
 
@@ -275,8 +274,6 @@ const Features = () => {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <CTASection />
       </main>
       <Footer />
     </>

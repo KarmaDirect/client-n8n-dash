@@ -15,7 +15,6 @@ import {
   Linkedin
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { CTASection } from "@/components/cta-section";
 import { typography } from "@/lib/constants/design-tokens";
 import { cn } from "@/lib/utils";
 
@@ -156,8 +155,6 @@ const About = () => {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <CTASection />
       </main>
       <Footer />
     </>
