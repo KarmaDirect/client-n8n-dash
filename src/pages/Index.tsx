@@ -28,7 +28,7 @@ import {
 import { Navbar } from "@/components/navbar";
 import { PricingSection } from "@/components/pricing-section";
 import { Footer } from "@/components/footer";
-import { VideoSection } from "@/components/ui/video-section";
+import { VideoPlayer } from "@/components/ui/video-player";
 import { AvatarCircles } from "@/components/magicui/avatar-circles";
 import { Ripple } from "@/components/magicui/ripple";
 import { Marquee } from "@/components/magicui/marquee";
@@ -229,7 +229,7 @@ const Index = () => {
       </section>
 
       {/* Video Section */}
-      <VideoSection />
+      <VideoPlayer />
 
       {/* Use Cases Section */}
       <section id="use-cases" className="py-20 bg-white">
