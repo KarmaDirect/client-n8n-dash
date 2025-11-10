@@ -1,0 +1,69 @@
+hero section :
+
+pnpm dlx shadcn add @tailark/hero-section-5
+
+ou 
+
+pnpm dlx shadcn add @tailark/hero-section-1
+
+features
+
+pnpm dlx shadcn add @tailark/features-9
+
+et 
+
+pnpm dlx shadcn add @tailark/features-5
+
+integrations :
+
+pnpm dlx shadcn add @tailark/integrations-4
+
+content section :
+
+pnpm dlx shadcn add @tailark/content-2
+
+et 
+
+stats  section :
+
+pnpm dlx shadcn add @tailark/stats-1
+
+testimonials section :
+
+pnpm dlx shadcn add @tailark/testimonials-2
+
+call to action section :
+
+pnpm dlx shadcn add @tailark/call-to-action-2
+
+et 
+
+pnpm dlx shadcn add @tailark/call-to-action-3
+
+footer section :
+
+pnpm dlx shadcn add @tailark/footer-3
+
+pricing section :
+
+pnpm dlx shadcn add @tailark/pricing-4
+
+comparative table section :
+
+pnpm dlx shadcn add @tailark/comparator-1
+
+faqs section :
+
+pnpm dlx shadcn add @tailark/faqs-2
+
+connexion : 
+
+pnpm dlx shadcn add @tailark/login-2
+
+inscription :
+
+pnpm dlx shadcn add @tailark/sign-up-2
+
+contact section :
+
+pnpm dlx shadcn add @tailark/contact-2 

@@ -49,7 +49,7 @@ serve(async (req) => {
     // 1. Récupérer le workflow et son template
     const { data: workflow, error: workflowError } = await supabaseClient
       .from('workflows')
-      .select('*, workflow_templates(*)')
+      .select('*')
       .eq('id', workflow_id)
       .single()
 
@@ -57,6 +57,22 @@ serve(async (req) => {
     if (!workflow) throw new Error('Workflow not found')
 
     console.log(`[track-workflow-execution] Found workflow: ${workflow.name}`)
+
+    // Récupérer le template associé (si présent) pour enrichir les métriques
+    let template: any = null
+    if (workflow.template_id) {
+      const { data: templateData, error: templateError } = await supabaseClient
+        .from('workflow_templates')
+        .select('*')
+        .eq('id', workflow.template_id)
+        .single()
+
+      if (templateError) {
+        console.warn(`[track-workflow-execution] Could not fetch template ${workflow.template_id}:`, templateError)
+      } else {
+        template = templateData
+      }
+    }
 
     // 2. Créer le log d'exécution détaillé
     const { data: executionLog, error: logError } = await supabaseClient
@@ -106,7 +122,6 @@ serve(async (req) => {
         .single()
 
       // Calculer les nouvelles métriques
-      const template = workflow.workflow_templates
       const estimatedCost = template?.estimated_cost_per_exec || 0
       const estimatedTimeSaved = template?.estimated_time_saved_minutes || 0
 

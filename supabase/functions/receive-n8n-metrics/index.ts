@@ -25,9 +25,12 @@ serve(async (req) => {
 
     // Vérifier l'API key (depuis header X-API-Key)
     const apiKey = req.headers.get('X-API-Key') || req.headers.get('x-api-key');
-    const expectedApiKey = Deno.env.get('N8N_METRICS_API_KEY');
+    const expectedKeys = [
+      Deno.env.get('N8N_METRICS_API_KEY'),
+      Deno.env.get('N8N_API_KEY')
+    ].filter((value): value is string => Boolean(value));
 
-    if (!expectedApiKey || apiKey !== expectedApiKey) {
+    if (expectedKeys.length === 0 || !apiKey || !expectedKeys.includes(apiKey)) {
       console.warn(`[receive-n8n-metrics] Invalid API key. Received: ${apiKey?.substring(0, 10)}...`);
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
@@ -102,27 +105,16 @@ serve(async (req) => {
     };
 
     // Appeler l'Edge Function track-workflow-execution
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const trackUrl = `${supabaseUrl}/functions/v1/track-workflow-execution`;
-    
-    const trackRes = await fetch(trackUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-        'apikey': Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(trackPayload)
+    const { data: trackResult, error: trackError } = await supabaseClient.functions.invoke('track-workflow-execution', {
+      body: trackPayload
     });
 
-    if (!trackRes.ok) {
-      const errorText = await trackRes.text();
-      console.error(`[receive-n8n-metrics] Failed to track execution:`, errorText);
-      throw new Error(`Failed to track execution: ${errorText}`);
+    if (trackError) {
+      console.error(`[receive-n8n-metrics] Failed to track execution:`, trackError);
+      throw new Error(`Failed to track execution: ${trackError.message || trackError}`);
     }
 
-    const trackResult = await trackRes.json();
-    console.log(`[receive-n8n-metrics] Execution tracked: ${trackResult.execution_log_id}`);
+    console.log(`[receive-n8n-metrics] Execution tracked: ${trackResult?.execution_log_id}`);
 
     return new Response(
       JSON.stringify({
