@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ButtonPremium } from "@/components/ui/button-premium";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardPremium } from "@/components/ui/card-premium";
+import { typography } from "@/lib/constants/design-tokens";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { WebstateLogo } from "@/components/ui/webstate-logo";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, Zap, Users, Shield, TrendingUp, CheckCircle2, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { cn } from "@/lib/utils";
 
 const Auth = () => {
   const { signIn, signUp, user } = useAuth();
@@ -164,6 +168,7 @@ const Auth = () => {
     if (score <= 4) return "Bon";
     return "Excellent";
   };
+
   return (
     <main className="min-h-screen flex">
       {/* Bouton de retour */}
@@ -200,7 +205,7 @@ const Auth = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-3xl font-bold text-gray-900 mb-2"
+              className={cn(typography.heading.h1, "mb-2")}
             >
               {mode === "signin" ? "Connexion" : mode === "reset" ? "Mot de passe oublié" : "Créer un compte"}
             </motion.h1>
@@ -225,8 +230,8 @@ const Auth = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <Card className="border-0 shadow-xl">
-              <CardContent className="p-8">
+            <CardPremium className="border-0 shadow-premium p-fluid-lg">
+              <CardContent className="p-0">
                 <form onSubmit={onSubmit} className="space-y-6">
                   {/* Email */}
                   <div className="space-y-2">
@@ -390,10 +395,10 @@ const Auth = () => {
                   )}
 
                   {/* Bouton principal */}
-                  <Button 
+                  <ButtonPremium 
                     type="submit" 
                     disabled={isLoading || (mode === "signup" && (!!emailError || !!passwordError))}
-                    className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-12 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">
@@ -403,7 +408,7 @@ const Auth = () => {
                     ) : (
                       mode === "signin" ? "Se connecter" : mode === "reset" ? "Envoyer le lien" : "Créer le compte"
                     )}
-                  </Button>
+                  </ButtonPremium>
 
                   {/* Liens de navigation */}
                   <div className="text-center space-y-3">
@@ -446,7 +451,7 @@ const Auth = () => {
                   </div>
                 </form>
               </CardContent>
-            </Card>
+            </CardPremium>
           </motion.div>
 
           {/* Footer */}
