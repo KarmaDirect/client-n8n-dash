@@ -556,7 +556,7 @@ export default function AdminWorkflowsPage() {
                           </TableCell>
                           <TableCell>
                             {workflow.last_run_at
-                              ? new Date(workflow.last_run_at).toLocaleString("fr-FR")
+                              ? (workflow.last_run_at ? new Date(workflow.last_run_at).toLocaleString("fr-FR") : "Jamais")
                               : "Jamais"}
                           </TableCell>
                           <TableCell>

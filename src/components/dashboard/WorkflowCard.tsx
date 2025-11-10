@@ -265,7 +265,7 @@ export default function WorkflowCard({ workflow, metrics, onRefresh }: WorkflowC
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <Clock className="w-3 h-3" />
               Dernière exécution:{" "}
-              {new Date(workflow.last_execution_at).toLocaleString()}
+              {workflow.last_execution_at ? new Date(workflow.last_execution_at).toLocaleString() : 'Jamais exécuté'}
             </div>
           )}
 

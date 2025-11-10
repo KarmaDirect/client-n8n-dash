@@ -250,7 +250,7 @@ const Admin = () => {
               />
               <div className="text-sm text-muted-foreground">{filteredOrgs.length} affichées</div>
             </div>
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -308,10 +308,10 @@ const Admin = () => {
                 {runs.map((r) => (
                   <li key={r.id} className="p-2 rounded border">
                     <div className="text-xs text-muted-foreground">
-                      {r.status} — {new Date(r.started_at).toLocaleString()} (wf: {r.workflow_id})
+                      {r.status} — {r.started_at ? new Date(r.started_at).toLocaleString() : 'Date inconnue'} (wf: {r.workflow_id})
                     </div>
                     <div className="text-xs">
-                      Fin: {r.finished_at ? new Date(r.finished_at).toLocaleString() : '—'}
+                      Fin: {r.finished_at && !isNaN(new Date(r.finished_at).getTime()) ? new Date(r.finished_at).toLocaleString() : '—'}
                     </div>
                   </li>
                 ))}
@@ -348,7 +348,7 @@ const Admin = () => {
                 />
                 <div className="text-sm text-muted-foreground">{filteredSubs.length} abonnés</div>
               </div>
-              <div className="rounded-md border">
+              <div className="rounded-md border overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>

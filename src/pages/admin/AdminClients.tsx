@@ -236,6 +236,7 @@ const AdminClients = () => {
                 />
               )
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -303,6 +304,7 @@ const AdminClients = () => {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

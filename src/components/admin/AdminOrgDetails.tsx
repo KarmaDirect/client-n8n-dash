@@ -126,7 +126,7 @@ export const AdminOrgDetails = ({ orgId }: { orgId: string }) => {
               {messages.map((m) => (
                 <li key={m.id} className="p-2 rounded border">
                   <div className="text-xs text-muted-foreground">
-                    {m.author} — {new Date(m.created_at).toLocaleString()}
+                    {m.author} — {m.created_at ? new Date(m.created_at).toLocaleString() : 'Date inconnue'}
                   </div>
                   <div className="text-sm whitespace-pre-wrap">{m.message}</div>
                 </li>
