@@ -4,7 +4,7 @@
 
 set -e
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ARCHIVE_ROOT="$ROOT_DIR/docs/archive/root-files"
 ARCHIVE_TEMP="$ROOT_DIR/.archive"
 

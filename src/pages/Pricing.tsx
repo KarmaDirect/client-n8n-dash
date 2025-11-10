@@ -3,21 +3,20 @@ import { Footer } from "@/components/footer";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { PricingSection } from "@/components/pricing-section";
 import { ButtonPremium } from "@/components/ui/button-premium";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardPremium } from "@/components/ui/card-premium";
 import { 
   ArrowRight, 
-  Check, 
   Star, 
-  Users, 
-  Building2, 
-  Crown,
   MessageCircle,
   Phone,
   Shield,
-  Zap
+  Zap,
+  Users
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CTASection } from "@/components/cta-section";
+import { typography } from "@/lib/constants/design-tokens";
+import { cn } from "@/lib/utils";
 
 const Pricing = () => {
   document.title = "Tarifs — Webstate";
@@ -99,22 +98,22 @@ const Pricing = () => {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-white">
+      <main className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="pt-20 pb-16 bg-gradient-to-br from-slate-50 to-blue-50">
+        <section className="pt-20 pb-16 bg-background">
           <div className="container mx-auto px-4 py-fluid-2xl">
             <div className="text-center max-w-4xl mx-auto">
               <BlurFade delay={0.1}>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full mb-8">
-                  <Crown className="w-4 h-4" />
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full mb-8">
+                  <Shield className="w-4 h-4" />
                   <span className="text-sm font-medium">Tarifs Transparents</span>
                 </div>
               </BlurFade>
               
               <BlurFade delay={0.2}>
-                <h1 className="text-fluid-4xl sm:text-fluid-5xl font-display font-bold tracking-tight text-foreground mb-fluid-lg">
+                <h1 className={cn(typography.heading.h1, "mb-fluid-lg")}>
                   Des Tarifs qui{" "}
-                  <span className="text-gradient">S'adaptent</span> à Vous
+                  <span className="text-primary">S'adaptent</span> à Vous
                 </h1>
               </BlurFade>
               
@@ -146,14 +145,14 @@ const Pricing = () => {
         <PricingSection />
 
         {/* Add-ons Section */}
-        <section className="py-20 bg-slate-50">
+        <section className="py-20 bg-card">
           <div className="container mx-auto px-4">
             <BlurFade delay={0.1}>
               <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                <h2 className={cn(typography.heading.h2, "mb-4")}>
                   Options Supplémentaires
                 </h2>
-                <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                   Personnalisez votre expérience avec nos modules complémentaires
                 </p>
               </div>
@@ -162,24 +161,24 @@ const Pricing = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
               {addons.map((addon, index) => (
                 <BlurFade key={addon.name} delay={0.2 + index * 0.1}>
-                  <Card className="border-slate-200 bg-white hover:shadow-lg transition-shadow">
-                    <CardContent className="p-6">
+                  <CardPremium className="border-border hover:shadow-premium transition-shadow">
+                    <div className="p-fluid-lg">
                       <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <h3 className={cn(typography.heading.h5)}>
                           {addon.name}
                         </h3>
-                        <span className="text-xl font-bold text-blue-600">
+                        <span className={cn(typography.heading.h4, "text-primary")}>
                           {addon.price}
                         </span>
                       </div>
-                      <p className="text-slate-600 mb-4">
+                      <p className="text-muted-foreground mb-4">
                         {addon.description}
                       </p>
                       <ButtonPremium variant="outline" size="sm" className="w-full">
                         Ajouter à mon Plan
                       </ButtonPremium>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </CardPremium>
                 </BlurFade>
               ))}
             </div>
@@ -187,14 +186,14 @@ const Pricing = () => {
         </section>
 
         {/* Testimonials */}
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
             <BlurFade delay={0.1}>
               <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                <h2 className={cn(typography.heading.h2, "mb-4")}>
                   Ce que Disent Nos Clients
                 </h2>
-                <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                   Découvrez pourquoi ils ont choisi Webstate
                 </p>
               </div>
@@ -203,26 +202,26 @@ const Pricing = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               {testimonials.map((testimonial, index) => (
                 <BlurFade key={testimonial.author} delay={0.2 + index * 0.1}>
-                  <Card className="border-slate-200 bg-white">
-                    <CardContent className="p-6">
+                  <CardPremium className="border-border">
+                    <div className="p-fluid-lg">
                       <div className="flex mb-4">
                         {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                          <Star key={i} className="w-4 h-4 text-primary fill-current" />
                         ))}
                       </div>
-                      <blockquote className="text-slate-700 mb-4 italic">
+                      <blockquote className="text-foreground mb-4 italic">
                         "{testimonial.quote}"
                       </blockquote>
                       <div>
-                        <div className="font-semibold text-slate-900">
+                        <div className={cn(typography.heading.h6)}>
                           {testimonial.author}
                         </div>
-                        <div className="text-sm text-slate-600">
+                        <div className="text-sm text-muted-foreground">
                           {testimonial.role} • {testimonial.company}
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </CardPremium>
                 </BlurFade>
               ))}
             </div>
@@ -230,14 +229,14 @@ const Pricing = () => {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-20 bg-slate-50">
+        <section className="py-20 bg-card">
           <div className="container mx-auto px-4">
             <BlurFade delay={0.1}>
               <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                <h2 className={cn(typography.heading.h2, "mb-4")}>
                   Questions Fréquentes
                 </h2>
-                <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                   Tout ce que vous devez savoir sur nos tarifs
                 </p>
               </div>
@@ -246,16 +245,16 @@ const Pricing = () => {
             <div className="max-w-3xl mx-auto space-y-6">
               {faqs.map((faq, index) => (
                 <BlurFade key={faq.question} delay={0.2 + index * 0.1}>
-                  <Card className="border-slate-200 bg-white">
-                    <CardContent className="p-6">
-                      <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                  <CardPremium className="border-border">
+                    <div className="p-fluid-lg">
+                      <h3 className={cn(typography.heading.h5, "mb-3")}>
                         {faq.question}
                       </h3>
-                      <p className="text-slate-600">
+                      <p className="text-muted-foreground">
                         {faq.answer}
                       </p>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </CardPremium>
                 </BlurFade>
               ))}
             </div>
@@ -263,14 +262,14 @@ const Pricing = () => {
         </section>
 
         {/* Contact Section */}
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
             <BlurFade delay={0.1}>
               <div className="text-center mb-12">
-                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                <h2 className={cn(typography.heading.h2, "mb-4")}>
                   Besoin d'un Tarif Personnalisé ?
                 </h2>
-                <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-8">
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
                   Contactez notre équipe pour discuter de vos besoins spécifiques
                 </p>
                 
@@ -293,37 +292,37 @@ const Pricing = () => {
             <BlurFade delay={0.2}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Shield className="w-8 h-8 text-blue-600" />
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Shield className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  <h3 className={cn(typography.heading.h5, "mb-2")}>
                     Sans Engagement
                   </h3>
-                  <p className="text-slate-600">
+                  <p className="text-muted-foreground">
                     Aucun contrat long terme, annulation à tout moment
                   </p>
                 </div>
                 
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Zap className="w-8 h-8 text-green-600" />
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Zap className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  <h3 className={cn(typography.heading.h5, "mb-2")}>
                     Mise en Route Rapide
                   </h3>
-                  <p className="text-slate-600">
+                  <p className="text-muted-foreground">
                     Vos premiers agents opérationnels en moins de 48h
                   </p>
                 </div>
                 
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-8 h-8 text-purple-600" />
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  <h3 className={cn(typography.heading.h5, "mb-2")}>
                     Support Dédié
                   </h3>
-                  <p className="text-slate-600">
+                  <p className="text-muted-foreground">
                     Une équipe d'experts pour vous accompagner
                   </p>
                 </div>

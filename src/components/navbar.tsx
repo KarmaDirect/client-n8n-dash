@@ -62,12 +62,12 @@ export function Navbar({ className }: NavbarProps) {
               </Link>
 
               {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center space-x-8">
+              <div className="hidden lg:flex items-center space-x-6">
                 {navLinks.map((link) => (
                   <a
                     key={link.href}
                     href={link.href}
-                    className="link-premium text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                    className="link-premium text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                   >
                     {link.label}
                   </a>
@@ -75,14 +75,14 @@ export function Navbar({ className }: NavbarProps) {
               </div>
 
               {/* CTA Buttons */}
-              <div className="hidden md:flex items-center space-x-4">
+              <div className="hidden lg:flex items-center space-x-3">
                 <Link to="/auth">
-                  <ButtonPremium variant="ghost" size="sm">
+                  <ButtonPremium variant="ghost" size="sm" className="whitespace-nowrap">
                     Connexion
                   </ButtonPremium>
                 </Link>
                 <Link to="/auth">
-                  <ButtonPremium size="sm" className="group">
+                  <ButtonPremium size="sm" className="group whitespace-nowrap">
                     Essai Gratuit
                     <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </ButtonPremium>
@@ -92,7 +92,8 @@ export function Navbar({ className }: NavbarProps) {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg hover:bg-accent transition-colors"
+                className="lg:hidden p-2 rounded-lg hover:bg-accent transition-colors"
+                aria-label="Toggle menu"
               >
                 {isMobileMenuOpen ? (
                   <X className="w-5 h-5" />
@@ -113,7 +114,7 @@ export function Navbar({ className }: NavbarProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 md:hidden"
+            className="fixed inset-0 z-40 lg:hidden"
           >
             {/* Backdrop */}
             <div

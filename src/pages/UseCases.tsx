@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { BlurFade } from "@/components/ui/blur-fade";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardPremium } from "@/components/ui/card-premium";
 import { ButtonPremium } from "@/components/ui/button-premium";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { 
@@ -11,7 +11,6 @@ import {
   BarChart3, 
   ShoppingCart, 
   Users, 
-  FileText, 
   Headphones,
   ArrowRight,
   Play,
@@ -20,6 +19,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CTASection } from "@/components/cta-section";
+import { typography } from "@/lib/constants/design-tokens";
+import { cn } from "@/lib/utils";
 
 const UseCases = () => {
   document.title = "Cas d'Usage — Webstate";
@@ -40,7 +41,6 @@ const UseCases = () => {
         label: "Temps de réponse réduit"
       },
       industry: "E-commerce, SaaS, Services",
-      color: "from-blue-400 to-blue-600"
     },
     {
       icon: <Mail className="w-8 h-8" />,
@@ -57,7 +57,6 @@ const UseCases = () => {
         label: "Amélioration conversion"
       },
       industry: "Marketing, Vente, B2B",
-      color: "from-green-400 to-emerald-600"
     },
     {
       icon: <Calendar className="w-8 h-8" />,
@@ -74,7 +73,6 @@ const UseCases = () => {
         label: "Réduction no-shows"
       },
       industry: "Santé, Conseil, Services",
-      color: "from-purple-400 to-purple-600"
     },
     {
       icon: <BarChart3 className="w-8 h-8" />,
@@ -91,7 +89,6 @@ const UseCases = () => {
         label: "Gain hebdomadaire"
       },
       industry: "Finance, Retail, Manufacturing",
-      color: "from-orange-400 to-red-500"
     }
   ];
 
@@ -169,22 +166,22 @@ const UseCases = () => {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-white">
+      <main className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="pt-20 pb-16 bg-gradient-to-br from-slate-50 to-blue-50">
+        <section className="pt-20 pb-16 bg-background">
           <div className="container mx-auto px-4 py-fluid-2xl">
             <div className="text-center max-w-4xl mx-auto">
               <BlurFade delay={0.1}>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full mb-8">
                   <TrendingUp className="w-4 h-4" />
                   <span className="text-sm font-medium">Cas d'Usage Concrets</span>
                 </div>
               </BlurFade>
               
               <BlurFade delay={0.2}>
-                <h1 className="text-fluid-4xl sm:text-fluid-5xl font-display font-bold tracking-tight text-foreground mb-fluid-lg">
+                <h1 className={cn(typography.heading.h1, "mb-fluid-lg")}>
                   Des Solutions{" "}
-                  <span className="text-gradient">Éprouvées</span>
+                  <span className="text-primary">Éprouvées</span>
                 </h1>
               </BlurFade>
               
@@ -213,14 +210,14 @@ const UseCases = () => {
         </section>
 
         {/* Main Use Cases */}
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-card">
           <div className="container mx-auto px-4">
             <BlurFade delay={0.1}>
               <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                <h2 className={cn(typography.heading.h2, "mb-4")}>
                   Cas d'Usage Principaux
                 </h2>
-                <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                   Les domaines où notre IA excelle et transforme les entreprises
                 </p>
               </div>
@@ -229,52 +226,50 @@ const UseCases = () => {
             <div className="space-y-12 max-w-6xl mx-auto">
               {mainUseCases.map((useCase, index) => (
                 <BlurFade key={useCase.title} delay={0.2 + index * 0.1}>
-                  <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-slate-200">
-                    <CardContent className="p-0">
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
-                        {/* Content */}
-                        <div className="lg:col-span-2 p-8">
-                          <div className="flex items-start gap-6">
-                            <div className={`w-16 h-16 bg-gradient-to-r ${useCase.color} rounded-2xl flex items-center justify-center text-white flex-shrink-0`}>
-                              {useCase.icon}
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                                {useCase.title}
-                              </h3>
-                              <p className="text-slate-600 mb-6 text-lg">
-                                {useCase.description}
-                              </p>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                                {useCase.benefits.map((benefit, idx) => (
-                                  <div key={idx} className="flex items-center gap-3">
-                                    <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                                    <span className="text-slate-700 text-sm">{benefit}</span>
-                                  </div>
-                                ))}
-                              </div>
-                              <div className="text-sm text-slate-500">
-                                <strong>Industries:</strong> {useCase.industry}
-                              </div>
-                            </div>
+                  <CardPremium className="overflow-hidden hover:shadow-premium transition-all duration-base border-border">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
+                      {/* Content */}
+                      <div className="lg:col-span-2 p-fluid-lg">
+                        <div className="flex items-start gap-6">
+                          <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary flex-shrink-0">
+                            {useCase.icon}
                           </div>
-                        </div>
-                        
-                        {/* Metrics */}
-                        <div className={`bg-gradient-to-br ${useCase.color} p-8 text-white flex flex-col justify-center`}>
-                          <div className="text-center">
-                            <div className="text-4xl font-bold mb-2">
-                              <NumberTicker value={parseInt(useCase.metrics.improvement.replace(/\D/g, '')) || 0} />
-                              {useCase.metrics.improvement.replace(/\d/g, '')}
-                            </div>
-                            <p className="text-white/90 font-medium">
-                              {useCase.metrics.label}
+                          <div className="flex-1">
+                            <h3 className={cn(typography.heading.h3, "mb-3")}>
+                              {useCase.title}
+                            </h3>
+                            <p className="text-muted-foreground mb-6 text-lg">
+                              {useCase.description}
                             </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                              {useCase.benefits.map((benefit, idx) => (
+                                <div key={idx} className="flex items-center gap-3">
+                                  <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                                  <span className="text-foreground text-sm">{benefit}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              <strong>Industries:</strong> {useCase.industry}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                      
+                      {/* Metrics */}
+                      <div className="bg-primary/10 p-fluid-lg text-primary flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-border">
+                        <div className="text-center">
+                          <div className={cn(typography.heading.h1, "mb-2")}>
+                            <NumberTicker value={parseInt(useCase.metrics.improvement.replace(/\D/g, '')) || 0} />
+                            {useCase.metrics.improvement.replace(/\d/g, '')}
+                          </div>
+                          <p className="text-primary/80 font-medium">
+                            {useCase.metrics.label}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardPremium>
                 </BlurFade>
               ))}
             </div>
@@ -282,14 +277,14 @@ const UseCases = () => {
         </section>
 
         {/* Industry Use Cases */}
-        <section className="py-20 bg-slate-50">
+        <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
             <BlurFade delay={0.1}>
               <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                <h2 className={cn(typography.heading.h2, "mb-4")}>
                   Par Secteur d'Activité
                 </h2>
-                <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                   Des solutions adaptées à votre industrie
                 </p>
               </div>
@@ -298,26 +293,26 @@ const UseCases = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
               {industryUseCases.map((industry, index) => (
                 <BlurFade key={industry.industry} delay={0.2 + index * 0.1}>
-                  <Card className="h-full border-slate-200 bg-white">
-                    <CardContent className="p-8">
+                  <CardPremium className="h-full border-border">
+                    <div className="p-fluid-lg">
                       <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                           {industry.icon}
                         </div>
-                        <h3 className="text-xl font-semibold text-slate-900">
+                        <h3 className={cn(typography.heading.h4)}>
                           {industry.industry}
                         </h3>
                       </div>
                       <ul className="space-y-3">
                         {industry.useCases.map((useCase, idx) => (
                           <li key={idx} className="flex items-start gap-3">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                            <span className="text-slate-700">{useCase}</span>
+                            <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                            <span className="text-foreground">{useCase}</span>
                           </li>
                         ))}
                       </ul>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </CardPremium>
                 </BlurFade>
               ))}
             </div>
@@ -325,14 +320,14 @@ const UseCases = () => {
         </section>
 
         {/* Success Stories */}
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-card">
           <div className="container mx-auto px-4">
             <BlurFade delay={0.1}>
               <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                <h2 className={cn(typography.heading.h2, "mb-4")}>
                   Histoires de Succès
                 </h2>
-                <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                   Découvrez les résultats obtenus par nos clients
                 </p>
               </div>
@@ -341,26 +336,26 @@ const UseCases = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               {successStories.map((story, index) => (
                 <BlurFade key={story.company} delay={0.2 + index * 0.1}>
-                  <Card className="text-center border-slate-200 bg-white hover:shadow-lg transition-shadow">
-                    <CardContent className="p-8">
-                      <div className="text-3xl font-bold text-blue-600 mb-2">
+                  <CardPremium className="text-center border-border hover:shadow-premium transition-shadow">
+                    <div className="p-fluid-lg">
+                      <div className={cn(typography.heading.h2, "text-primary mb-2")}>
                         <NumberTicker value={parseInt(story.metric.replace(/\D/g, '')) || 0} />
                         {story.metric.replace(/\d/g, '')}
                       </div>
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                      <h3 className={cn(typography.heading.h5, "mb-2")}>
                         {story.company}
                       </h3>
-                      <p className="text-slate-600 mb-4 text-sm">
+                      <p className="text-muted-foreground mb-4 text-sm">
                         {story.industry}
                       </p>
-                      <p className="text-slate-700 font-medium mb-3">
+                      <p className="text-foreground font-medium mb-3">
                         {story.result}
                       </p>
-                      <p className="text-slate-500 text-sm">
+                      <p className="text-muted-foreground text-sm">
                         {story.description}
                       </p>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </CardPremium>
                 </BlurFade>
               ))}
             </div>

@@ -170,7 +170,7 @@ export function Footer({ className }: FooterProps) {
       </div>
 
       {/* Decorative Bottom Border */}
-      <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary" />
+      <div className="h-1 bg-primary/20" />
     </footer>
   );
 }
