@@ -229,7 +229,10 @@ const Index = () => {
       </section>
 
       {/* Video Section */}
-      <VideoPlayer />
+      <VideoPlayer 
+        videoUrl="/videoexemple.mp4"
+        thumbnailUrl="/video-placeholder.svg"
+      />
 
       {/* Use Cases Section */}
       <section id="use-cases" className="py-20 bg-white">
