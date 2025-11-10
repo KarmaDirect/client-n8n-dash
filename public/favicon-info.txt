@@ -1,0 +1,13 @@
+Le favicon SVG a été créé avec un design moderne pour WebState :
+
+- Cercle bleu premium (gradient #4F7CFF → #3B5FD9)
+- Lettres "W" et "S" stylisées en blanc
+- Symbole d'automatisation/IA (petites étoiles)
+- Design minimaliste et professionnel
+
+Pour générer les autres formats (ICO, PNG), vous pouvez :
+1. Utiliser https://realfavicongenerator.net/
+2. Uploader le favicon.svg
+3. Télécharger le package complet
+
+Ou simplement garder le SVG qui fonctionne sur tous les navigateurs modernes.
