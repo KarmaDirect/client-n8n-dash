@@ -1,0 +1,405 @@
+
+Ou tu préfères un fichier calendrier iCal/CSV à importer ?
+
+Pour que je te fasse ça, peux-tu confirmer :
+Est-ce que tu souhaites que je prépare aussi des rappels quotidiens, pauses, réunions associé, etc. ?
+
+Combien d’heures par jour veux-tu réellement travailler (max 8, 10, 12) ?
+
+Veux-tu des tâches à faire pour l’associé en parallèle ?
+
+Je suis prêt à te faire ce planning complet et optimisé dans la forme que tu préfères !
+
+fichier calendrier pret a integrer sur calendar
+
+Preparing to generate a calendar file ready for integration into your calendar application.
+Python
+Programmation
+Fini
+PARFAIT ! 📅✅ Ton fichier calendrier est PRÊT !
+
+🎯 Ce qui a été créé :
+46 événements du 16 novembre au 31 décembre 2025 avec :
+
+✅ 312 heures de travail planifiées
+
+✅ Horaires précis (09h-18h ou 09h-15h selon les jours)
+
+✅ Descriptions détaillées de TOUTES les tâches heure par heure
+
+✅ Rappels automatiques 30 min avant chaque session
+
+✅ Objectifs clairs par journée
+
+✅ Milestones marqués (Pack START, PRO, ELITE, Lancement)
+
+📋 Contenu du planning :
+Semaine 1 (16-22 nov) : Setup + Pack START
+20 workflows essentiels opérationnels
+
+Semaine 2 (23-29 nov) : Pack PRO
+Workflows 21-45 + onboarding associé
+
+Semaine 3 (30 nov - 6 déc) : Pack ELITE
+Workflows 46-65 (RH, Compta, Management)
+
+Semaine 4 (7-13 déc) : Polish + Marketing
+Dashboard, Landing page, Documentation, Vidéos
+
+Lancement (14-16 déc) : Beta
+Premiers clients, support, bilan
+
+Maintenance (17-31 déc) : Support quotidien
+Stabilité + feedback clients
+
+📥 Comment importer dans Google Calendar :
+Télécharge le fichier webstate_planning_complet.ics
+
+Va sur calendar.google.com
+
+Clique sur ⚙️ Paramètres (en haut à droite)
+
+Dans le menu gauche : "Importer et exporter"
+
+Clique sur "Sélectionner un fichier depuis votre ordinateur"
+
+Choisis le fichier .ics
+
+Sélectionne ton calendrier principal
+
+Clique sur "Importer"
+
+✅ BOOM ! Tous tes événements apparaissent automatiquement !
+
+Tu veux que je t'envoie le fichier d'une autre manière ou que je modifie quelque chose ? 🚀
+
+
+
+
+
+
+Python
+
+from datetime import datetime, timedelta
+import json
+
+# Créer le fichier iCalendar (.ics)
+ics_content = """BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//WebState Planning//FR
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:WebState - Projet Complet
+X-WR-TIMEZONE:Europe/Paris
+X-WR-CALDESC:Planning détaillé WebState 16 nov - 31 déc 2025
+
+"""
+
+# Liste des événements
+events = [
+    # SEMAINE 1
+    {
+        "date": "20251116",
+        "start": "090000",
+        "end": "180000",
+        "summary": "🚀 WebState - Setup Infrastructure",
+        "description": "TÂCHES:\\n• 09h-10h: Création projet Next.js + GitHub\\n• 10h-11h: Setup Supabase (tables, RLS)\\n• 11h-12h: Déploiement Vercel\\n• 13h-14h30: Setup n8n (Cloud ou Railway)\\n• 14h30-16h: Structure dossiers Next.js\\n• 16h-17h: Variables environnement\\n• 17h-18h: Tests + Git commit\\n\\nOBJECTIF: Infrastructure complète opérationnelle"
+    },
+    {
+        "date": "20251117",
+        "start": "090000",
+        "end": "180000",
+        "summary": "🗄️ WebState - Base de données + Auth",
+        "description": "TÂCHES:\\n• 09h-10h30: Migration Supabase tables 1-4 (tenants, credentials, leads, interactions)\\n• 10h30-12h: Tables 5-8 (appointments, templates, workflows, executions)\\n• 13h-14h30: RLS Policies toutes tables\\n• 14h30-16h: Google OAuth Setup\\n• 16h-17h30: Dashboard basique\\n• 17h30-18h: Tests Auth + Git commit\\n\\nOBJECTIF: BDD complète + Auth fonctionnel"
+    },
+    {
+        "date": "20251118",
+        "start": "090000",
+        "end": "180000",
+        "summary": "⚙️ WebState - Workflows START #1-5",
+        "description": "TÂCHES:\\n• 09h-10h30: WF#1 Formulaire→Lead (n8n webhook + Supabase)\\n• 10h30-12h: WF#2 Lead Scoring automatique\\n• 13h-14h: WF#3 Détection doublon contacts\\n• 14h-15h30: WF#4 Prise RDV Calendly + SMS\\n• 15h30-17h: WF#5 Rappel RDV J-1 (cron + GPT-4o-mini)\\n• 17h-18h: Tests end-to-end + commit\\n\\nOBJECTIF: 5 premiers workflows opérationnels"
+    },
+    {
+        "date": "20251119",
+        "start": "090000",
+        "end": "180000",
+        "summary": "⚙️ WebState - Workflows #6-10 + Call Associé",
+        "description": "TÂCHES:\\n• 09h-10h: WF#6 Rappel RDV H-2\\n• 10h-11h: WF#7 No-show detection\\n• 11h-12h: WF#8 Email entrant→Tri IA\\n• 13h-14h: WF#9 Réponses auto Comments FB/IG\\n• 14h-15h: WF#10 Détection urgence (4 canaux)\\n• 15h-16h: Tests workflows 6-10\\n• 16h-17h: 🤝 CALL ASSOCIÉ - Présentation projet\\n• 17h-18h: Git commit + documentation\\n\\nOBJECTIF: 10 workflows + associé briefé"
+    },
+    {
+        "date": "20251120",
+        "start": "090000",
+        "end": "180000",
+        "summary": "⚙️ WebState - Workflows #11-15",
+        "description": "TÂCHES:\\n• 09h-10h: WF#11 Demande avis J+5\\n• 10h-11h: WF#12 Avis positif→Google Maps\\n• 11h-12h: WF#13 Avis négatif→Feedback privé\\n• 13h-14h30: WF#14 Formulaire contact→CRM\\n• 14h30-16h30: WF#15 Chatbot site 24/7 (FAQ + GPT-4o-mini)\\n• 16h30-17h30: Tests workflows 11-15\\n• 17h30-18h: Git commit\\n\\nOBJECTIF: 15 workflows opérationnels"
+    },
+    {
+        "date": "20251121",
+        "start": "090000",
+        "end": "180000",
+        "summary": "⚙️ WebState - Workflows #16-20",
+        "description": "TÂCHES:\\n• 09h-10h30: WF#16 Lead nurturing (J+1,3,7)\\n• 10h30-12h: WF#17 Newsletter mensuelle\\n• 13h-14h30: WF#18 Générateur devis 1 clic (PDF)\\n• 14h30-16h: WF#19 Relance devis J+3,J+7\\n• 16h-17h: WF#20 Factures automatiques\\n• 17h-18h: Tests workflows 16-20 + commit\\n\\nOBJECTIF: 20 workflows Pack START complet"
+    },
+    {
+        "date": "20251122",
+        "start": "090000",
+        "end": "150000",
+        "summary": "✅ WebState - Tests Pack START COMPLET",
+        "description": "TÂCHES:\\n• 09h-11h: Tests end-to-end complets\\n  - Scénario 1: Lead→RDV→Rappels→Avis\\n  - Scénario 2: Formulaire→Nurturing→Devis→Facture\\n  - Scénario 3: Email urgence→Alerte\\n• 11h-12h: Debug + corrections\\n• 13h-14h30: Documentation complète 20 workflows\\n• 14h30-15h: Git commit + tag v0.1.0\\n\\n🎉 MILESTONE 1: Pack START 100% fonctionnel (20 workflows)"
+    },
+    
+    # SEMAINE 2
+    {
+        "date": "20251123",
+        "start": "090000",
+        "end": "180000",
+        "summary": "🎨 WebState - Community Manager #21-24",
+        "description": "TÂCHES:\\n• 09h-11h: WF#21 Générateur Multi-Posts IA (5 versions GPT-4)\\n• 11h-12h: WF#22 Planificateur multi-plateformes\\n• 13h-15h: WF#23 Générateur Stories/Reels IA (TTS + vidéo)\\n• 15h-17h: WF#24 Réponses DM réseaux sociaux auto\\n• 17h-18h: Tests + commit\\n\\nOBJECTIF: 4 workflows CM opérationnels"
+    },
+    {
+        "date": "20251124",
+        "start": "090000",
+        "end": "180000",
+        "summary": "🎨 WebState - CM #25-27 + Email #28-30",
+        "description": "TÂCHES:\\n• 09h-10h: WF#25 Modération automatique\\n• 10h-11h: WF#26 Gestion avis Google/Facebook\\n• 11h-12h: WF#27 Reporting hebdo réseaux\\n• 13h-14h: WF#28 Campagne email segmentée\\n• 14h-15h: WF#29 Email anniversaire client\\n• 15h-16h30: WF#30 Réactivation inactifs J+60\\n• 16h30-18h: Tests + commit\\n\\nOBJECTIF: CM complet + Email marketing"
+    },
+    {
+        "date": "20251125",
+        "start": "090000",
+        "end": "180000",
+        "summary": "📧 WebState - Email #31-32 + Commercial #33-34 + 🤝 Onboarding Associé",
+        "description": "TÂCHES:\\n• 09h-10h: WF#31 Sequence welcome\\n• 10h-11h: WF#32 A/B testing emails\\n• 11h-12h: WF#33 CRM enrichissement LinkedIn\\n• 13h-14h30: WF#34 Propositions commerciales (GPT-4 + PDF)\\n• 14h30-16h30: 🤝 ONBOARDING ASSOCIÉ (2h)\\n  - Setup env dev\\n  - Architecture codebase\\n  - Premiers tests\\n• 16h30-18h: Tests workflows + commit\\n\\nOBJECTIF: Associé formé + 4 workflows"
+    },
+    {
+        "date": "20251126",
+        "start": "090000",
+        "end": "150000",
+        "summary": "💼 WebState - Commercial #35-36 + Secrétariat #37-38",
+        "description": "TÂCHES TOI:\\n• 09h-10h30: WF#35 Cross-sell intelligent\\n• 10h30-12h: WF#36 Préparation dossiers clients\\n• 13h-14h30: WF#37 Courrier digital (tri + Drive)\\n• 14h30-15h30: WF#38 Rédaction documents auto\\n\\nASSOCIÉ (parallèle 4h):\\n• Setup env dev complet\\n• Premiers commits tests\\n\\nOBJECTIF: 4 workflows + associé autonome"
+    },
+    {
+        "date": "20251127",
+        "start": "090000",
+        "end": "180000",
+        "summary": "📋 WebState - Secrétariat #39-40 + Parcours Client #41-43",
+        "description": "TÂCHES:\\n• 09h-10h: WF#39 Organisation Drive intelligente\\n• 10h-11h30: WF#40 Centralisation communications\\n• 13h-14h30: WF#41 Lead→Prospect (nurturing)\\n• 14h30-16h: WF#42 Prospect→Client (relances)\\n• 16h-17h30: WF#43 Client→Fidèle (J+1,7,30)\\n• 17h30-18h: Tests + commit\\n\\nOBJECTIF: Parcours client automatisé complet"
+    },
+    {
+        "date": "20251128",
+        "start": "090000",
+        "end": "180000",
+        "summary": "🔄 WebState - Parcours #44-45 + Dashboard Frontend + Review Associé",
+        "description": "TÂCHES:\\n• 09h-11h: WF#44 Parrainage automatique\\n• 11h-12h: WF#45 Cross-sell post-achat\\n• 13h-14h: Tests workflows 44-45\\n• 14h-15h: 🤝 REVIEW CODE ASSOCIÉ (1h call)\\n• 15h-17h: Page frontend Workflows (liste + toggle)\\n• 17h-18h: Git commit\\n\\nASSOCIÉ: Review + répartition tâches\\n\\nOBJECTIF: 45 workflows + dashboard init"
+    },
+    {
+        "date": "20251129",
+        "start": "090000",
+        "end": "150000",
+        "summary": "✅ WebState - Tests Pack PRO Part 1 COMPLET",
+        "description": "TÂCHES:\\n• 09h-11h: Tests end-to-end workflows 21-45\\n  - Scénario CM complet\\n  - Scénario Email marketing\\n  - Scénario Commercial\\n• 11h-12h: Debug + corrections\\n• 13h-14h30: Documentation workflows 21-45\\n• 14h30-15h: Git commit + tag v0.2.0\\n\\n🎉 MILESTONE 2: 45 workflows fonctionnels"
+    },
+    
+    # SEMAINE 3
+    {
+        "date": "20251130",
+        "start": "090000",
+        "end": "180000",
+        "summary": "👥 WebState - RH #46-49",
+        "description": "TÂCHES:\\n• 09h-11h: WF#46 Analyseur CV intelligent (OCR + GPT-4 scoring)\\n• 11h-12h: WF#47 Matching CV↔Offre\\n• 13h-15h: WF#48 Scraper LinkedIn auto (Phantombuster)\\n• 15h-17h: WF#49 Publication offres multi-sites (Indeed, LinkedIn...)\\n• 17h-18h: Tests + commit\\n\\nOBJECTIF: Module RH recrutement complet"
+    },
+    {
+        "date": "20251201",
+        "start": "090000",
+        "end": "180000",
+        "summary": "👥 WebState - RH #50-53",
+        "description": "TÂCHES:\\n• 09h-10h30: WF#50 Générateur contrats travail\\n• 10h30-12h: WF#51 Onboarding checklist auto (J+1,7,15,30)\\n• 13h-14h30: WF#52 Gestion congés automatique\\n• 14h30-16h: WF#53 Rappels formation obligatoire\\n• 16h-17h30: Tests workflows 50-53\\n• 17h30-18h: Git commit\\n\\nOBJECTIF: Module RH administratif complet"
+    },
+    {
+        "date": "20251202",
+        "start": "090000",
+        "end": "150000",
+        "summary": "💼 WebState - Comptabilité #54-56",
+        "description": "TÂCHES TOI:\\n• 09h-10h30: WF#54 Rapprochement bancaire auto\\n• 10h30-12h: WF#55 Relance impayés multi-niveaux (J+5,15,30)\\n• 13h-14h30: WF#56 Déclaration TVA\\n• 14h30-15h: Tests + commit\\n\\nASSOCIÉ (parallèle 4h):\\n• Dashboard tenant (frontend)\\n• Stats cards + Charts\\n\\nOBJECTIF: Compta base + dashboard UX"
+    },
+    {
+        "date": "20251203",
+        "start": "090000",
+        "end": "150000",
+        "summary": "💼 WebState - Comptabilité #57-59",
+        "description": "TÂCHES TOI:\\n• 09h-10h30: WF#57 Notes de frais OCR (photo→extraction)\\n• 10h30-12h: WF#58 Reporting financier mensuel\\n• 13h-14h30: WF#59 Chatbot comptable expert (GPT-4)\\n• 14h30-15h: Tests + commit\\n\\nASSOCIÉ (parallèle 4h):\\n• Page workflows (frontend)\\n• Liste + config + status real-time\\n\\nOBJECTIF: Compta complète"
+    },
+    {
+        "date": "20251204",
+        "start": "090000",
+        "end": "150000",
+        "summary": "👨‍💼 WebState - Management #60-62",
+        "description": "TÂCHES TOI:\\n• 09h-11h: WF#60 Dashboard CEO temps réel (tous KPIs)\\n• 11h-12h: WF#61 Briefing audio quotidien (TTS Telegram)\\n• 13h-14h30: WF#62 Dispatch tâches intelligent\\n• 14h30-15h: Tests + commit\\n\\nASSOCIÉ (parallèle 4h):\\n• Page leads (frontend)\\n• Table + filters + search\\n\\nOBJECTIF: Module management complet"
+    },
+    {
+        "date": "20251205",
+        "start": "090000",
+        "end": "150000",
+        "summary": "👨‍💼 WebState - Management #63-64 + E-commerce #65 + Review Associé",
+        "description": "TÂCHES TOI:\\n• 09h-10h: WF#63 Suivi projets multi-outils (Trello/Asana)\\n• 10h-11h: WF#64 Alertes business (seuils critiques)\\n• 11h-12h: WF#65 Panier abandonné (J+1h,24h,72h)\\n• 13h-14h: Tests workflows 63-65\\n• 14h-15h: 🤝 REVIEW HEBDO ASSOCIÉ\\n\\nASSOCIÉ (4h):\\n• Page interactions (frontend)\\n\\nOBJECTIF: 65 workflows prêts!"
+    },
+    {
+        "date": "20251206",
+        "start": "090000",
+        "end": "180000",
+        "summary": "✅ WebState - Tests Pack ELITE COMPLET",
+        "description": "TÂCHES:\\n• 09h-12h: Tests end-to-end workflows 46-65\\n  - Scénario RH complet\\n  - Scénario Comptabilité\\n  - Scénario Management\\n• 13h-15h: Tests intégration COMPLÈTE 65 workflows\\n• 15h-17h: Debug + corrections finales\\n• 17h-18h: Git commit + tag v1.0.0\\n\\n🎉🎉 MILESTONE 3: 65 workflows Pack ELITE fonctionnels!"
+    },
+    
+    # SEMAINE 4
+    {
+        "date": "20251207",
+        "start": "090000",
+        "end": "180000",
+        "summary": "✨ WebState - Polish Dashboard + Settings",
+        "description": "TÂCHES:\\n• 09h-12h: Page settings (credentials API externes)\\n• 13h-15h: Page billing (intégration Stripe)\\n• 15h-17h: Page analytics (charts + KPIs)\\n• 17h-18h: Tests + commit\\n\\nOBJECTIF: Dashboard complet production-ready"
+    },
+    {
+        "date": "20251208",
+        "start": "090000",
+        "end": "180000",
+        "summary": "🌐 WebState - Landing Page + Marketing Site",
+        "description": "TÂCHES TOI:\\n• 09h-12h: Backend Stripe (subscriptions + webhooks)\\n• 13h-18h: Système onboarding complet\\n\\nASSOCIÉ (8h parallèle):\\n• Landing page complète:\\n  - Hero + Features\\n  - Pricing 3 packs\\n  - Testimonials + FAQ\\n  - Contact form\\n\\nOBJECTIF: Site marketing complet"
+    },
+    {
+        "date": "20251209",
+        "start": "090000",
+        "end": "150000",
+        "summary": "📚 WebState - Documentation",
+        "description": "TÂCHES TOI (6h):\\n• Doc technique (API, webhooks, intégrations)\\n\\nASSOCIÉ (6h parallèle):\\n• Doc utilisateur (guide workflows par pack)\\n• Guides setup API externes\\n\\nOBJECTIF: Documentation complète clients"
+    },
+    {
+        "date": "20251210",
+        "start": "090000",
+        "end": "150000",
+        "summary": "🎥 WebState - Vidéos démo + Tutoriels",
+        "description": "TÂCHES TOI (6h):\\n• Vidéos setup (Calendly, Twilio, SendGrid...)\\n• Vidéos configuration workflows\\n\\nASSOCIÉ (6h parallèle):\\n• Vidéos utilisation dashboard\\n• Vidéos parcours utilisateur\\n\\nOBJECTIF: Bibliothèque vidéos formation"
+    },
+    {
+        "date": "20251211",
+        "start": "090000",
+        "end": "180000",
+        "summary": "🧪 WebState - Tests End-to-End COMPLETS",
+        "description": "TÂCHES:\\n• 09h-12h: Parcours utilisateur complet\\n  - Signup → Onboarding → Config → Activation workflows\\n• 13h-15h: Tests paiements Stripe (tous scénarios)\\n• 15h-17h: Tests charge (100 req/min)\\n• 17h-18h: Tests tous workflows ensemble\\n\\nOBJECTIF: Validation production complète"
+    },
+    {
+        "date": "20251212",
+        "start": "090000",
+        "end": "150000",
+        "summary": "🐛 WebState - Bug fixes + Performance",
+        "description": "TÂCHES:\\n• 09h-11h: Corrections bugs détectés\\n• 11h-12h: Optimisation performance (queries, cache)\\n• 13h-14h: Setup monitoring (Sentry)\\n• 14h-15h: Tests finaux + commit\\n\\nOBJECTIF: Produit stable et optimisé"
+    },
+    {
+        "date": "20251213",
+        "start": "090000",
+        "end": "180000",
+        "summary": "🚀 WebState - PRÉPARATION LANCEMENT",
+        "description": "TÂCHES:\\n• 09h-12h: Marketing materials (posts réseaux, emails)\\n• 13h-15h: Liste 100 prospects qualifiés\\n• 15h-17h: Plan acquisition clients + pricing final\\n• 17h-18h: Préparation pitch + démo\\n\\n✅ MILESTONE: Produit production-ready!"
+    },
+    
+    # LANCEMENT
+    {
+        "date": "20251214",
+        "start": "090000",
+        "end": "150000",
+        "summary": "🎉 WebState - LANCEMENT BETA - Premiers clients!",
+        "description": "🚀 JOUR DE LANCEMENT!\\n\\nTÂCHES:\\n• 09h-11h: Outreach 20 prospects qualifiés\\n• 11h-12h: Offre beta gratuite 1 mois\\n• 13h-15h: Onboarding premiers clients beta\\n\\nOBJECTIF: 3-5 clients beta onboardés"
+    },
+    {
+        "date": "20251215",
+        "start": "090000",
+        "end": "150000",
+        "summary": "🛠️ WebState - Support clients beta",
+        "description": "TÂCHES:\\n• 09h-12h: Réponses questions clients\\n• 13h-14h: Ajustements selon feedback\\n• 14h-15h: Monitoring erreurs production\\n\\nASSOCIÉ (4h parallèle):\\n• Support clients\\n• Documentation ajustements\\n\\nOBJECTIF: Clients satisfaits + feedback collecté"
+    },
+    {
+        "date": "20251216",
+        "start": "090000",
+        "end": "130000",
+        "summary": "📊 WebState - BILAN + Rétrospective",
+        "description": "🎯 BILAN PROJET!\\n\\nTÂCHES:\\n• 09h-10h: Analyse métriques (clients, usage, revenus)\\n• 10h-11h: Feedback clients consolidé\\n• 11h-12h: Roadmap mois 2 (features prioritaires)\\n• 12h-13h: Répartition rôles définitive avec associé\\n\\n🎉 OBJECTIF ATTEINT: 5-10 clients beta actifs!\\n🚀 Prêt pour scaling janvier!"
+    },
+]
+
+# Ajouter events récurrents 17-31 décembre
+for day in range(17, 32):
+    events.append({
+        "date": f"202512{day:02d}",
+        "start": "090000",
+        "end": "150000",
+        "summary": "🔧 WebState - Support + Développement",
+        "description": "TÂCHES QUOTIDIENNES:\\n• Support clients beta\\n• Corrections bugs remontés\\n• Améliorations features selon feedback\\n• Monitoring production\\n• Préparation scaling janvier\\n\\nOBJECTIF: Stabilité + satisfaction clients"
+    })
+
+# Générer les événements iCal
+for idx, event in enumerate(events, 1):
+    # Convertir date/heure en format iCal
+    date = event["date"]
+    start_time = event["start"]
+    end_time = event["end"]
+    
+    # Format datetime pour iCal (format: YYYYMMDDTHHmmss)
+    dtstart = f"{date}T{start_time}"
+    dtend = f"{date}T{end_time}"
+    
+    # Créer l'événement
+    ics_content += f"""BEGIN:VEVENT
+UID:webstate-{idx}@webstate-planning
+DTSTAMP:20251112T040000Z
+DTSTART;TZID=Europe/Paris:{dtstart}
+DTEND;TZID=Europe/Paris:{dtend}
+SUMMARY:{event['summary']}
+DESCRIPTION:{event['description'].replace('\\n', '\\n ')}
+LOCATION:Remote
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+BEGIN:VALARM
+TRIGGER:-PT30M
+ACTION:DISPLAY
+DESCRIPTION:Rappel 30min avant
+END:VALARM
+END:VEVENT
+
+"""
+
+# Fermer le calendrier
+ics_content += "END:VCALENDAR"
+
+# Sauvegarder le fichier
+with open('/tmp/webstate_planning_complet.ics', 'w', encoding='utf-8') as f:
+    f.write(ics_content)
+
+print("✅ FICHIER .ICS CRÉÉ AVEC SUCCÈS!")
+print("="*80)
+print(f"\n📅 Nombre d'événements: {len(events)}")
+print(f"📆 Période: 16 novembre - 31 décembre 2025")
+print(f"⏰ Total heures planifiées: ~{sum([8 if '180000' in e['end'] else 6 for e in events])}h")
+print("\n" + "="*80)
+print("\n🎯 CONTENU DU FICHIER:")
+print("• Semaine 1 (16-22 nov): Setup + Pack START (20 workflows)")
+print("• Semaine 2 (23-29 nov): Pack PRO Part 1 (workflows 21-45)")
+print("• Semaine 3 (30 nov - 6 déc): Pack ELITE (workflows 46-65)")
+print("• Semaine 4 (7-13 déc): Polish + Landing + Doc")
+print("• Lancement (14-16 déc): Beta clients")
+print("• Maintenance (17-31 déc): Support + développement")
+print("\n📋 Chaque événement contient:")
+print("• ⏰ Horaires précis (09h-18h ou 09h-15h)")
+print("• 📝 Description détaillée des tâches heure par heure")
+print("• 🔔 Rappel automatique 30 minutes avant")
+print("• 🎯 Objectifs clairs par journée")
+print("\n" + "="*80)
+print("\n🚀 FICHIER PRÊT À IMPORTER!")
+print("\nLe fichier est enregistré ici: /tmp/webstate_planning_complet.ics")
+print("\n📥 Pour l'importer dans Google Calendar:")
+print("1. Va sur calendar.google.com")
+print("2. Clique sur ⚙️ Paramètres")
+print("3. Clique sur 'Importer et exporter'")
+print("4. Clique sur 'Sélectionner un fichier'")
+print("5. Choisis le fichier webstate_planning_complet.ics")
+print("6. Sélectionne ton calendrier")
+print("7. Clique sur 'Importer'")
+print("\n✅ TOUS LES ÉVÉNEMENTS SERONT CRÉÉS AUTOMATIQUEMENT!")
